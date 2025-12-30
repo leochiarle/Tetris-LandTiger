@@ -67,7 +67,7 @@
 #define Blue2          0x051F
 #define Red            0xF800
 #define Magenta        0xF81F
-#define Orange         0xFF8000
+#define Orange         0xfc9803
 #define Green          0x07E0
 #define Cyan           0x7FFF
 #define Yellow         0xFFE0
@@ -131,14 +131,12 @@ typedef struct{
 
 }Piece;
 
-static int playField[WIDTH][HEIGHT];
-static int real_x = 3, real_y = HEIGHT-1;
-
-
 void LCD_DrawCube( uint16_t x, uint16_t y, uint16_t bkColor );
 void LCD_ClearCube ( uint16_t x, uint16_t y );
 void LCD_ClearRow ( uint16_t y );
 int fullRow( uint16_t row );
 void LCD_DrawTetromino( uint16_t x, uint16_t y, Piece p );
 void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift );
+void enableGoDown();
+void disableGoDown();
 

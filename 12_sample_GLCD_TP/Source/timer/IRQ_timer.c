@@ -23,41 +23,29 @@
 **
 ******************************************************************************/
 
+/* Global variable and function */
+extern int real_x, real_y;
+extern int goDown;
+void createTetromino();
 
 
 void TIMER0_IRQHandler (void)
 {
-  //LPC_TIM0->IR = 1;			/* clear interrupt flag */
-  LPC_TIM0->IR = 0x3F;			/* clear interrupt flag */
-	/*
-	int i = pos_y;
-	
-	for(; i > pos_y - 4; i--){
-		LCD_ClearRow(i);
-		LCD_DrawTetromino( 3, pos_y - 1, O);
-	}
-	
-	pos_y--;
-	*/
 	
 	// i valori vanno aggiornati nel timer perche' il timer e' indipendente e non aspetta la fine delle funzioni chiamate
-	if(real_y > 2 ){ // TODO: && playField[pos_y+4][pos_x] == 0
+	if( real_y > 2 ){ // TODO: && playField[pos_y+4][pos_x] == 0
 		
-		LCD_DownShiftTetromino(real_x, real_y, 1);
-		real_y--;
+		goDown++;
 		
-		//LCD_LeftShiftTetromino(real_x, real_y, 1);
-		//real_x--;
-		
-		//LCD_RightShiftTetromino(real_x, real_y, 1);
-		//real_x++;
 	}else{
 		createTetromino();
 		// senza questi il timer spawna pezzi sempre all'inizio
 		real_x = 3;
 		real_y = HEIGHT-1;
 	}
-
+	
+  LPC_TIM0->IR = 1;			/* clear interrupt flag */
+	
   return;
 }
 

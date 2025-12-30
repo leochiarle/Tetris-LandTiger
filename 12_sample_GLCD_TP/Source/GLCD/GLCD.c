@@ -673,6 +673,10 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
       END FILE
 *********************************************************************************************************/
 
+/* Global variable and function */
+extern playField[WIDTH][HEIGHT];
+
+
 // FIX: devo shiftare solo l'area del pezzo, non tutta la riga.
 /* partendo da una row di input shifta di "shift" un numero dato di row (number)*/
 void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift ){
@@ -765,14 +769,14 @@ void LCD_LeftShiftTetromino( uint16_t x, uint16_t y, uint16_t shift ){
 
 void LCD_RightShiftTetromino( uint16_t x, uint16_t y, uint16_t shift ){
 	
-	if(x < WIDTH && x >= 0 && y < HEIGHT && y >= 0 && shift < WIDTH && shift >= 0 ) {
+	if(x < WIDTH-4 && x >= 0 && y < HEIGHT && y >= 0 && shift < WIDTH && shift >= 0 ) {
 		
 		int i = y-4; //19-4 = 15
 		int j = x+3; //3+3 = 
 		// 2 giri
 		for(; j >= x; j-- ){
 			for(; i <= y; i++ ){
-				if(playField[j][i] == 1){
+				if(playField[j][i] == 1){ // FIX: se il pezzo tocca il fondo i valori della matrice non sono corretti e genera errore
 					
 					LCD_DrawCube(j+1, i, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
 					LCD_ClearCube(j, i);
@@ -793,7 +797,7 @@ void LCD_RightShiftTetromino( uint16_t x, uint16_t y, uint16_t shift ){
 }
 
 
-void LCD_DrawTetromino( uint16_t x, uint16_t y, Piece p ){ // IDEA: per fdisegnare la rotazione basta invertire le coordinate di lettura della matrice del tetromino (?)
+void LCD_DrawTetromino( uint16_t x, uint16_t y, Piece p ){ // IDEA: per disegnare la rotazione basta invertire le coordinate di lettura della matrice del tetromino (?)
 	
 	if(x < WIDTH && x >= 0 && y < HEIGHT && y >= 0){
 		int i = y, j = x;
@@ -889,3 +893,16 @@ void LCD_ClearRow ( uint16_t y ){
 	}
 	
 }
+/*
+void enableGoDown(){
+	
+	goDown=1;
+
+}
+
+void disableGoDown(){
+	
+	goDown=0;
+
+}
+*/

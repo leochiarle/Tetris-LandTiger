@@ -36,6 +36,10 @@
 extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emulator to find the symbol (can be placed also inside system_LPC17xx.h but since it is RO, it needs more work)
 #endif
 
+int playField[WIDTH][HEIGHT];
+int real_x = 3, real_y = HEIGHT-1;
+int goDown = 0;
+
 
 	Tetrominos tetrominos = {
 		
@@ -145,7 +149,7 @@ void createTetromino(){
 	
 	int max = 6, min = 0;
 	int rd_num = rand() % (max - min + 1) + min;
-	
+	char str[10];
 	//printf("%d", rd_num);
 	
 	switch(rd_num){
@@ -194,7 +198,7 @@ void createTetromino(){
 	}
 }
 
-	
+
 int main(void)
 {
   SystemInit();  												/* System Initialization (i.e., PLL)  */
@@ -216,14 +220,12 @@ int main(void)
 	
 	
 	joystick_init();											/* Joystick Initialization            */
-	//init_RIT(0xC8);												/* RIT Initialization 50 msec       	*/
-	//enable_RIT();													/* RIT enabled												*/
-	//init_timer(0,0xBEBC20);								/* c = t*f = 0.5 * 25MHz = 5 * 25*10^5 */
 	
 	LCD_DrawLine(MAX_X - INFO_FIELD + 1, MAX_Y - PLAY_FIELD_HEIGHT, MAX_X - INFO_FIELD + 1, MAX_Y, White);
 	LCD_DrawLine(0, MAX_Y - PLAY_FIELD_HEIGHT - 1, PLAY_FIELD_WIDTH, MAX_Y - PLAY_FIELD_HEIGHT - 1, White);
 	
-	LCD_DrawTetromino(3, 19, TEST);
+	//LCD_DrawTetromino(3, 19, TEST);
+	createTetromino();
 	
 	init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
 	enable_timer(0);	
@@ -232,20 +234,43 @@ int main(void)
 		 
 		if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	// Joytick UP pressed 
 			
-		} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0){	// Joytick RIGHT pressed 
+		} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 && real_x < WIDTH-4){	// Joytick RIGHT pressed 
 			
-			// stop timer 0
+			disable_timer(0);	// stop timer 0
+			
 			LCD_RightShiftTetromino(real_x, real_y, 1);
 			real_x++;
-			// resume timer 0
+
+			enable_timer(0);	// resume timer 0
 			
-		} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0){	// Joytick LEFT pressed
+		} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0 && real_x >= 0){	// Joytick LEFT pressed
+			
+			disable_timer(0);	// stop timer 0
 			
 			LCD_LeftShiftTetromino(real_x, real_y, 1);
 			real_x--;
+
+			enable_timer(0);	// resume timer 0
 			
-		} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0){	// Joytick DOWN pressed 
+		} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0 && real_y > 2){	// Joytick DOWN pressed 
 			
+			disable_timer(0);	// stop timer 0
+			
+			LCD_DownShiftTetromino(real_x, real_y, 1);
+			real_y--;
+
+			enable_timer(0);	// resume timer 0
+		}
+		
+		if(goDown){
+			
+			disable_timer(0);	// stop timer 0
+			
+			LCD_DownShiftTetromino(real_x, real_y, 1);
+			real_y--;
+			goDown--;
+
+			enable_timer(0);	// resume timer 0
 		}
 		
 	}
