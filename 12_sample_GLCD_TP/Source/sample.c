@@ -36,9 +36,14 @@
 extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emulator to find the symbol (can be placed also inside system_LPC17xx.h but since it is RO, it needs more work)
 #endif
 
-int playField[WIDTH][HEIGHT];
-int real_x = 3, real_y = HEIGHT-1;
+int playField[FIELD_WIDTH_BLOCKS][FIELD_HEIGHT_BLOCKS];
+Piece activePiece;
+int real_x = 3, real_y = FIELD_HEIGHT_BLOCKS-1;
+int end_x, end_y;
 int goDown = 0;
+int stopDownShift = 0;
+
+void * memcpy(void *, const void *, size_t);
 
 
 	Tetrominos tetrominos = {
@@ -85,7 +90,11 @@ int goDown = 0;
 		.tetromino = {{0, 0, 0, 0}, 
 									{1, 1, 1, 1},
 									{0, 0, 0, 0},
-									{0, 0, 0, 0}}
+									{0, 0, 0, 0}},
+		.start_x = 0,
+		.start_y = 1,
+		.end_x = 3,
+		.end_y = 1
 	};
 	
 	Piece O = {
@@ -93,7 +102,11 @@ int goDown = 0;
 		.tetromino = {{0, 0, 0, 0}, 
 									{0, 1, 1, 0},
 									{0, 1, 1, 0},
-									{0, 0, 0, 0}}
+									{0, 0, 0, 0}},
+		.start_x = 1,
+		.start_y = 1,
+		.end_x = 2,
+		.end_y = 2
 	};
 	
 	Piece T = {
@@ -101,7 +114,11 @@ int goDown = 0;
 		.tetromino = {{0, 0, 0, 0}, 
 									{1, 1, 1, 0},
 									{0, 1, 0, 0},
-									{0, 0, 0, 0}}
+									{0, 0, 0, 0}},
+		.start_x = 0,
+		.start_y = 1,
+		.end_x = 2,
+		.end_y = 2
 	};
 	
 	Piece J = {
@@ -109,7 +126,11 @@ int goDown = 0;
 		.tetromino = {{0, 0, 1, 0}, 
 									{0, 0, 1, 0},
 									{0, 1, 1, 0},
-									{0, 0, 0, 0}}
+									{0, 0, 0, 0}},
+		.start_x = 1,
+		.start_y = 0,
+		.end_x = 2,
+		.end_y = 2
 	};	
 	
 	Piece L = {
@@ -117,7 +138,11 @@ int goDown = 0;
 		.tetromino = {{0, 1, 0, 0}, 
 									{0, 1, 0, 0}, 
 									{0, 1, 1, 0},
-									{0, 0, 0, 0}}
+									{0, 0, 0, 0}},
+		.start_x = 1,
+		.start_y = 0,
+		.end_x = 2,
+		.end_y = 2
 	};
 	
 	Piece S = {
@@ -125,7 +150,11 @@ int goDown = 0;
 		.tetromino = {{0, 0, 0, 0}, 
 									{0, 1, 1, 0},
 									{1, 1, 0, 0},
-									{0, 0, 0, 0}}
+									{0, 0, 0, 0}},
+		.start_x = 0,
+		.start_y = 1,
+		.end_x = 2,
+		.end_y = 2
 	};
 	
 	Piece Z = {
@@ -133,7 +162,11 @@ int goDown = 0;
 		.tetromino = {{0, 0, 0, 0}, 
 									{1, 1, 0, 0},
 									{0, 1, 1, 0},
-									{0, 0, 0, 0}}
+									{0, 0, 0, 0}},
+		.start_x = 0,
+		.start_y = 1,
+		.end_x = 2,
+		.end_y = 2
 	};
 	
 	Piece TEST = {
@@ -141,7 +174,11 @@ int goDown = 0;
 		.tetromino = {{1, 1, 1, 1}, 
 									{1, 1, 1, 1},
 									{1, 1, 1, 1},
-									{1, 1, 1, 1}}
+									{1, 1, 1, 1}},
+		.start_x = 0,
+		.start_y = 0,
+		.end_x = 4,
+		.end_y = 4
 	};
 	
 
@@ -149,62 +186,46 @@ void createTetromino(){
 	
 	int max = 6, min = 0;
 	int rd_num = rand() % (max - min + 1) + min;
-	char str[10];
-	//printf("%d", rd_num);
 	
 	switch(rd_num){
 		case 0:
-			real_x = 3;
-			real_y = HEIGHT-1;
-			LCD_DrawTetromino(real_x, real_y, I);
+			memcpy(&activePiece, &I, sizeof(Piece));
 			break;
 		
 		case 1:
-			real_x = 3;
-			real_y = HEIGHT-1;
-			LCD_DrawTetromino(real_x, real_y, O);
+			memcpy(&activePiece, &O, sizeof(Piece));
 			break;
 		
 		case 2:
-			real_x = 3;
-			real_y = HEIGHT-1;
-			LCD_DrawTetromino(real_x, real_y, T);
+			memcpy(&activePiece, &T, sizeof(Piece));
 			break;
 		
 		case 3:
-			real_x = 3;
-			real_y = HEIGHT-1;
-			LCD_DrawTetromino(real_x, real_y, J);
+			memcpy(&activePiece, &J, sizeof(Piece));
 			break;
 		
 		case 4:
-			real_x = 3;
-			real_y = HEIGHT-1;
-			LCD_DrawTetromino(real_x, real_y, L);
+			memcpy(&activePiece, &L, sizeof(Piece));
 			break;
 		
 		case 5:
-			real_x = 3;
-			real_y = HEIGHT-1;
-			LCD_DrawTetromino(real_x, real_y, S);
+			memcpy(&activePiece, &S, sizeof(Piece));
 			break;
 		
 		case 6:
-			real_x = 3;
-			real_y = HEIGHT-1;
-			LCD_DrawTetromino(real_x, real_y, Z);
+			memcpy(&activePiece, &Z, sizeof(Piece));
 			break;
 
 	}
+	stopDownShift = 0;
+	LCD_DrawTetromino(&activePiece);
 }
 
-
-int main(void)
-{
-  SystemInit();  												/* System Initialization (i.e., PLL)  */
+void initEverithing(){
+	
+	SystemInit();  												/* System Initialization (i.e., PLL)  */
 	
   LCD_Initialization();
-	
 	LCD_Clear(Black);
 	//GUI_Text(0, 280, (uint8_t *) " touch here : 1 sec to clear  ", Red, White);
 	
@@ -218,46 +239,50 @@ int main(void)
 	}
 	*/
 	
-	
 	joystick_init();											/* Joystick Initialization            */
+	
+}
+
+
+int main(void)
+{
+  
+	initEverithing();
 	
 	LCD_DrawLine(MAX_X - INFO_FIELD + 1, MAX_Y - PLAY_FIELD_HEIGHT, MAX_X - INFO_FIELD + 1, MAX_Y, White);
 	LCD_DrawLine(0, MAX_Y - PLAY_FIELD_HEIGHT - 1, PLAY_FIELD_WIDTH, MAX_Y - PLAY_FIELD_HEIGHT - 1, White);
 	
-	//LCD_DrawTetromino(3, 19, TEST);
+	//LCD_DrawTetromino(I);
 	createTetromino();
 	
-	init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
+	init_timer(0, 0x4E2 ); 						/* 500us * 25MHz = 1.25*10^6 = 0x1312D0 */
 	enable_timer(0);	
 	 
 	while(1){
 		 
 		if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	// Joytick UP pressed 
 			
-		} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 && real_x < WIDTH-4){	// Joytick RIGHT pressed 
+		} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 && activePiece.end_x < FIELD_WIDTH_BLOCKS){	// Joytick RIGHT pressed 
 			
 			disable_timer(0);	// stop timer 0
 			
-			LCD_RightShiftTetromino(real_x, real_y, 1);
-			real_x++;
+			LCD_RightShiftTetromino( &activePiece, 1 );
 
 			enable_timer(0);	// resume timer 0
 			
-		} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0 && real_x >= 0){	// Joytick LEFT pressed
+		} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0 && activePiece.start_x > 0){	// Joytick LEFT pressed
 			
 			disable_timer(0);	// stop timer 0
 			
-			LCD_LeftShiftTetromino(real_x, real_y, 1);
-			real_x--;
+			LCD_LeftShiftTetromino( &activePiece, 1 );
 
 			enable_timer(0);	// resume timer 0
 			
-		} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0 && real_y > 2){	// Joytick DOWN pressed 
+		} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0 && activePiece.end_y > 0){	// Joytick DOWN pressed 
 			
 			disable_timer(0);	// stop timer 0
 			
-			LCD_DownShiftTetromino(real_x, real_y, 1);
-			real_y--;
+			LCD_DownShiftTetromino( &activePiece, 1 );
 
 			enable_timer(0);	// resume timer 0
 		}
@@ -266,16 +291,13 @@ int main(void)
 			
 			disable_timer(0);	// stop timer 0
 			
-			LCD_DownShiftTetromino(real_x, real_y, 1);
-			real_y--;
+			LCD_DownShiftTetromino( &activePiece, 1 );
 			goDown--;
 
 			enable_timer(0);	// resume timer 0
 		}
 		
 	}
-	 
-	//createTetromino();
 	
 	/* Draw all and clear all
 	i = 0;

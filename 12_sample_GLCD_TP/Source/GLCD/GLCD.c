@@ -674,20 +674,23 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
 *********************************************************************************************************/
 
 /* Global variable and function */
-extern playField[WIDTH][HEIGHT];
+extern int playField[FIELD_WIDTH_BLOCKS][FIELD_HEIGHT_BLOCKS];
+extern int real_x, real_y;
+extern Piece activePiece;
+extern int stopDownShift;
 
 
 // FIX: devo shiftare solo l'area del pezzo, non tutta la riga.
 /* partendo da una row di input shifta di "shift" un numero dato di row (number)*/
 void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift ){
 	
-	if(row < HEIGHT && row >= 0 && number < HEIGHT && number >= 0 && shift < HEIGHT && shift >= 0 ) {
+	if(row < FIELD_HEIGHT_BLOCKS && row >= 0 && number < FIELD_HEIGHT_BLOCKS && number >= 0 && shift < FIELD_HEIGHT_BLOCKS && shift >= 0 ) {
 		
 		int i = row-number;
 		int j = 0;
 		
 		for(; i <= row; i++ ){
-			for(; j < WIDTH; j++ ){
+			for(; j < FIELD_WIDTH_BLOCKS; j++ ){
 				if(playField[j][i] == 1){
 					
 					LCD_DrawCube(j, i-1, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
@@ -708,88 +711,123 @@ void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift ){
 	
 }
 
-void LCD_DownShiftTetromino( uint16_t x, uint16_t y, uint16_t shift ){
+void LCD_DownShiftTetromino( Piece* p, uint16_t shift ){
 	
-	if(x < WIDTH && x >= 0 && y < HEIGHT && y >= 0 && shift < HEIGHT && shift >= 0 ) {
+	if(p->end_y > 0 && shift < FIELD_HEIGHT_BLOCKS && shift >= 0 ) {
 		
-		int i = y-3; //19
-		int j = x; //3
+		int x = p->start_x, y = p->start_y, x1 = p->end_x, y1 = p->end_y;
 		
-		for(; i <= y; i++ ){
-			for(; j < x+4; j++ ){
-				if(playField[j][i] == 1){
-					
-					LCD_DrawCube(j, i-1, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
-					LCD_ClearCube(j, i);
-					playField[j][i-1] = 1;
+		/* Check if the row below is empty where there is a block that could shift down*/
+		for(; x1 >= x && !stopDownShift; x1-- ){
+			if( playField[x1][y1] == 1 && y1-1 >= 0 && !(playField[x1][y1-1] == 0) ){
 				
-				}else { // cancella cubo
+				stopDownShift = 1;
 				
-					LCD_ClearCube(j, i-1);
-					playField[j][i-1] = 0;
-
-				}
 			}
-			j = 0;
+		}
+		
+		x = p->start_x; y = p->start_y; x1 = p->end_x; y1 = p->end_y;
+		
+		if(!stopDownShift){
+			for(; y1 <= y; y1++ ){
+				for(; x1 >= x; x1-- ){
+					if(playField[x1][y1] == 1 && y1-1 >= 0 && playField[x1][y1-1] == 0){
+						
+						LCD_DrawCube(x1, y1-1, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
+						LCD_ClearCube(x1, y1);	// If I don't clear the cube, previous if statement become false during the next iteration
+						playField[x1][y1-1] = 1;
+					
+					}
+				}
+				
+				x1 = p->end_x;
+			
+			}
+			
+			p->start_y--;
+			p->end_y--;
+			
 		}
 		
 	}
 	
 }
 
-/* partendo da una row di input shifta di "shift" a sinistra 4 row*/
-void LCD_LeftShiftTetromino( uint16_t x, uint16_t y, uint16_t shift ){
+/* Shifta il pezzo "p" di "shift" volte a sinistra*/
+void LCD_LeftShiftTetromino( Piece* p, uint16_t shift ){
 	
-	if(x < WIDTH && x >= 0 && y < HEIGHT && y >= 0 && shift < HEIGHT && shift >= 0 ) {
+	if(p->start_x > 0 && shift < FIELD_HEIGHT_BLOCKS && shift >= 0 ) {
 		
-		int i = y-3; //19-4
-		int j = x; //3
+		int x = p->start_x, y = p->start_y, x1 = p->end_x, y1 = p->end_y;
+		int impossible = 0;
 		
-		for(; j < x+4; j++ ){
-			for(; i <= y; i++ ){
-				if(playField[j][i] == 1){
-					
-					LCD_DrawCube(j-1, i, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
-					LCD_ClearCube(j, i);
-					playField[j-1][i] = 1;
-				
-				}else { // cancella cubo
-				
-					LCD_ClearCube(j-1, i);
-					playField[j-1][i] = 0;
-
-				}
+		for(; y >= y1 && !impossible; y-- ){
+			if(playField[x][y] == 1 && x-1 >= 0 && !(playField[x-1][y] == 0)){
+					impossible = 1;		
 			}
-			i = 0;
+		}
+		
+		if(!impossible){
+			x = p->start_x; y = p->start_y; x1 = p->end_x; y1 = p->end_y;
+			
+			for(; x <= x1; x++ ){
+				for(; y >= y1; y-- ){
+					if(playField[x][y] == 1 && x-1 >= 0 && playField[x-1][y] == 0){
+						
+						LCD_DrawCube(x-1, y, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
+						LCD_ClearCube(x, y);
+						playField[x-1][y] = 1;
+					
+					}
+				}
+				
+				y = p->start_y;
+				
+			}
+			
+			p->start_x--;
+			p->end_x--;
 		}
 		
 	}
 	
 }
 
-void LCD_RightShiftTetromino( uint16_t x, uint16_t y, uint16_t shift ){
+void LCD_RightShiftTetromino( Piece* p, uint16_t shift ){
 	
-	if(x < WIDTH-4 && x >= 0 && y < HEIGHT && y >= 0 && shift < WIDTH && shift >= 0 ) {
+	if(p->end_x < FIELD_WIDTH_BLOCKS-1 && shift < FIELD_WIDTH_BLOCKS && shift >= 0 ) {
 		
-		int i = y-4; //19-4 = 15
-		int j = x+3; //3+3 = 
-		// 2 giri
-		for(; j >= x; j-- ){
-			for(; i <= y; i++ ){
-				if(playField[j][i] == 1){ // FIX: se il pezzo tocca il fondo i valori della matrice non sono corretti e genera errore
-					
-					LCD_DrawCube(j+1, i, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
-					LCD_ClearCube(j, i);
-					playField[j+1][i] = 1;
+		int x = p->start_x, y = p->start_y, x1 = p->end_x, y1 = p->end_y;
+		int impossible = 0;
+		
+		for(; y1 <= y && !impossible; y1++ ){
+			if(playField[x1][y1] == 1 && x1+1 < FIELD_WIDTH_BLOCKS && !(playField[x1+1][y1] == 0)){ // FIX: se il pezzo tocca il fondo i valori della matrice non sono corretti e genera errore
 				
-				}else { // cancella cubo
-				
-					LCD_ClearCube(j+1, i);
-					playField[j+1][i] = 0;
-
-				}
+				impossible = 1;
+			
 			}
-			i = 0;
+		}
+		
+		if(!impossible){			
+			int x = p->start_x, y = p->start_y, x1 = p->end_x, y1 = p->end_y;
+			
+			for(; x1 >= x; x1-- ){
+				for(; y1 <= y; y1++ ){
+					if(playField[x1][y1] == 1 && x1+1 < FIELD_WIDTH_BLOCKS && playField[x1+1][y1] == 0){ // FIX: se il pezzo tocca il fondo i valori della matrice non sono corretti e genera errore
+						
+						LCD_DrawCube(x1+1, y1, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
+						LCD_ClearCube(x1, y1);
+						playField[x1+1][y1] = 1;
+					
+					}
+				}
+				
+				y1 = p->end_y;
+			
+			}
+			
+			p->start_x++;
+			p->end_x++;
 		}
 		
 	}
@@ -797,21 +835,30 @@ void LCD_RightShiftTetromino( uint16_t x, uint16_t y, uint16_t shift ){
 }
 
 
-void LCD_DrawTetromino( uint16_t x, uint16_t y, Piece p ){ // IDEA: per disegnare la rotazione basta invertire le coordinate di lettura della matrice del tetromino (?)
+void LCD_DrawTetromino( Piece* p ){ // IDEA: per disegnare la rotazione basta invertire le coordinate di lettura della matrice del tetromino (?)
 	
-	if(x < WIDTH && x >= 0 && y < HEIGHT && y >= 0){
-		int i = y, j = x;
-		int x1 = 0, y1 = 0;
+	int x = p->start_x, y = p->start_y;
+	
+	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
-		for(; i > y - 4; i--, x1++){
-			for(; j < x + 4; j++, y1++){
-				if(p.tetromino[x1][y1] == 1){
-					LCD_DrawCube(j, i, p.color);
+		int x1 = p->end_x, y1 = p->end_y, i = 0;
+		
+		for(; y <= y1; y++, i++){
+			for(; x <= x1; x++){
+				if(p->tetromino[y][x] == 1){
+					LCD_DrawCube((FIELD_WIDTH_BLOCKS/2)-((x1-x)), FIELD_HEIGHT_BLOCKS-1-i, p->color); // (FIELD_WIDTH_BLOCKS/2)-((int)(x1-x)/2) allows me to put the piece in the middle of the field
 				}
 			}
-			j = x;
-			y1 = 0;
+			x = p->start_x;
 		}
+		
+		int aux_x = p->start_x, aux_y = p->start_y;
+		
+		p->start_x = (FIELD_WIDTH_BLOCKS/2)-((p->end_x - aux_x));
+		p->start_y = FIELD_HEIGHT_BLOCKS-1;
+		p->end_x = p->start_x + (p->end_x - aux_x);
+		p->end_y = p->start_y - (p->end_y - aux_y);
+		
 	}
 	
 }
@@ -822,8 +869,8 @@ int fullRow( uint16_t row ){
 	int full = 1;
 	int i = 0;
 	
-	if( row >= 0 && row < HEIGHT ){
-		for( ; i < WIDTH && full; i++ ){
+	if( row >= 0 && row < FIELD_HEIGHT_BLOCKS ){
+		for( ; i < FIELD_WIDTH_BLOCKS && full; i++ ){
 			if( playField[i][row] != 1 ){
 				full = 0;
 			}
@@ -836,7 +883,7 @@ int fullRow( uint16_t row ){
 
 void LCD_DrawCube ( uint16_t x, uint16_t y, uint16_t color ){
 	
-	if(x < WIDTH && x >= 0 && y < HEIGHT && y >= 0){
+	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
 		int block = BLOCK;
 		int pos_x = PADDING+(block*x);
@@ -859,7 +906,7 @@ void LCD_DrawCube ( uint16_t x, uint16_t y, uint16_t color ){
 
 void LCD_ClearCube ( uint16_t x, uint16_t y ){
 	
-	if(x < WIDTH && x >= 0 && y < HEIGHT && y >= 0){
+	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
 		int block = BLOCK;
 		int pos_x = PADDING+(block*x);
@@ -882,11 +929,11 @@ void LCD_ClearCube ( uint16_t x, uint16_t y ){
 
 void LCD_ClearRow ( uint16_t y ){
 	
-	if(y < HEIGHT && y >= 0){
+	if(y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
 		int x = 0;
 		
-		for(; x < WIDTH; x++){
+		for(; x < FIELD_WIDTH_BLOCKS; x++){
 			LCD_ClearCube(x, y);
 			playField[x][y] = 0;
 		}

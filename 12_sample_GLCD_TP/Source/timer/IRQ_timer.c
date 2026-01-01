@@ -25,23 +25,27 @@
 
 /* Global variable and function */
 extern int real_x, real_y;
+extern Piece activePiece;
 extern int goDown;
+extern int stopDownShift;
+
 void createTetromino();
 
 
 void TIMER0_IRQHandler (void)
 {
+	// USA ACTIVEPIECE !!!
 	
 	// i valori vanno aggiornati nel timer perche' il timer e' indipendente e non aspetta la fine delle funzioni chiamate
-	if( real_y > 2 ){ // TODO: && playField[pos_y+4][pos_x] == 0
+	if( activePiece.end_y > 0 && !stopDownShift){ // TODO: && playField[pos_y+4][pos_x] == 0
 		
 		goDown++;
 		
 	}else{
 		createTetromino();
 		// senza questi il timer spawna pezzi sempre all'inizio
-		real_x = 3;
-		real_y = HEIGHT-1;
+		//real_x = 3;
+		//real_y = FIELD_HEIGHT_BLOCKS-1;
 	}
 	
   LPC_TIM0->IR = 1;			/* clear interrupt flag */

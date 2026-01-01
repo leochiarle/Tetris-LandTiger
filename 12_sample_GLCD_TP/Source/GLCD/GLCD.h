@@ -102,14 +102,14 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
       END FILE
 *********************************************************************************************************/
 
-#define HEIGHT 							20
-#define WIDTH 							10
-//#define BLOCK 						((MAX_Y-1)/HEIGHT)
-#define INFO_FIELD 					90 //(MAX_X * 1/2)
-#define PADDING 						0 // FIX: il padding deve essere lo scarto per avere la size giusta di 20x10 del play field
-#define PLAY_FIELD_WIDTH 		MAX_X - INFO_FIELD - PADDING
-#define BLOCK 							15 //PLAY_FIELD_WIDTH/WIDTH // 16 // FIX: non funziona la divisione
-#define PLAY_FIELD_HEIGHT		(BLOCK * HEIGHT) - PADDING
+#define FIELD_HEIGHT_BLOCKS			20
+#define FIELD_WIDTH_BLOCKS 			10
+//#define BLOCK 								((MAX_Y-1)/HEIGHT)
+#define INFO_FIELD 							90 //(MAX_X * 1/2)
+#define PADDING 								0 // FIX: il padding deve essere lo scarto per avere la size giusta di 20x10 del play field
+#define PLAY_FIELD_WIDTH 				MAX_X - INFO_FIELD - PADDING
+#define BLOCK 									15 //PLAY_FIELD_WIDTH/WIDTH // 16 // FIX: non funziona la divisione
+#define PLAY_FIELD_HEIGHT				(BLOCK * FIELD_HEIGHT_BLOCKS) - PADDING
 
 
 typedef struct{
@@ -127,7 +127,11 @@ typedef struct{
 typedef struct{
 	
 	uint16_t color;
-	const int tetromino[4][4];
+	int tetromino[4][4];
+	int start_x;
+	int start_y;
+	int end_x;
+	int end_y;
 
 }Piece;
 
@@ -135,7 +139,7 @@ void LCD_DrawCube( uint16_t x, uint16_t y, uint16_t bkColor );
 void LCD_ClearCube ( uint16_t x, uint16_t y );
 void LCD_ClearRow ( uint16_t y );
 int fullRow( uint16_t row );
-void LCD_DrawTetromino( uint16_t x, uint16_t y, Piece p );
+void LCD_DrawTetromino( Piece* p );
 void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift );
 void enableGoDown();
 void disableGoDown();

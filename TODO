@@ -12,3 +12,14 @@ ParsePieceShape() -> identifica l'area occupata dal pezzo (sarebbe da mettere co
 
 
 
+
+Negli shift prima di tutto devi controllare se TUTTO lo spostamento si puo' fare e successivamente fallo.
+
+
+Mantenere il colore del pezzo quando scende
+Rotazioni
+Punteggio
+
+
+
+
