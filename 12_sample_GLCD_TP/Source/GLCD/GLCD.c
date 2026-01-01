@@ -675,7 +675,6 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
 
 /* Global variable and function */
 extern int playField[FIELD_WIDTH_BLOCKS][FIELD_HEIGHT_BLOCKS];
-extern int real_x, real_y;
 extern Piece activePiece;
 extern int stopDownShift;
 
@@ -733,7 +732,7 @@ void LCD_DownShiftTetromino( Piece* p, uint16_t shift ){
 				for(; x1 >= x; x1-- ){
 					if(playField[x1][y1] == 1 && y1-1 >= 0 && playField[x1][y1-1] == 0){
 						
-						LCD_DrawCube(x1, y1-1, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
+						LCD_DrawCube(x1, y1-1, p->color);
 						LCD_ClearCube(x1, y1);	// If I don't clear the cube, previous if statement become false during the next iteration
 						playField[x1][y1-1] = 1;
 					
@@ -774,7 +773,7 @@ void LCD_LeftShiftTetromino( Piece* p, uint16_t shift ){
 				for(; y >= y1; y-- ){
 					if(playField[x][y] == 1 && x-1 >= 0 && playField[x-1][y] == 0){
 						
-						LCD_DrawCube(x-1, y, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
+						LCD_DrawCube(x-1, y, p->color);
 						LCD_ClearCube(x, y);
 						playField[x-1][y] = 1;
 					
@@ -815,7 +814,7 @@ void LCD_RightShiftTetromino( Piece* p, uint16_t shift ){
 				for(; y1 <= y; y1++ ){
 					if(playField[x1][y1] == 1 && x1+1 < FIELD_WIDTH_BLOCKS && playField[x1+1][y1] == 0){ // FIX: se il pezzo tocca il fondo i valori della matrice non sono corretti e genera errore
 						
-						LCD_DrawCube(x1+1, y1, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
+						LCD_DrawCube(x1+1, y1, p->color);
 						LCD_ClearCube(x1, y1);
 						playField[x1+1][y1] = 1;
 					

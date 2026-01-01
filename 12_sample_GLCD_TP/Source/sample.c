@@ -38,8 +38,6 @@ extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emul
 
 int playField[FIELD_WIDTH_BLOCKS][FIELD_HEIGHT_BLOCKS];
 Piece activePiece;
-int real_x = 3, real_y = FIELD_HEIGHT_BLOCKS-1;
-int end_x, end_y;
 int goDown = 0;
 int stopDownShift = 0;
 
