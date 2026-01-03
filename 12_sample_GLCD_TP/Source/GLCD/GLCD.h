@@ -112,7 +112,7 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
 #define PLAY_FIELD_HEIGHT				(BLOCK * FIELD_HEIGHT_BLOCKS) - PADDING
 
 
-typedef struct{
+typedef struct {
 	
 	const int I[4][4];
 	const int O[4][4];
@@ -122,9 +122,9 @@ typedef struct{
 	const int S[4][4];
 	const int Z[4][4];
 
-}Tetrominos;
+} Tetrominos;
 
-typedef struct{
+typedef struct {
 	
 	uint16_t color;
 	int tetromino[4][4];
@@ -133,14 +133,38 @@ typedef struct{
 	int end_x;
 	int end_y;
 
-}Piece;
+} Piece;
+
+typedef struct {
+	
+	uint16_t color;
+	int tetromino[4][4];
+	int start_x;
+	int start_y;
+	int end_x;
+	int end_y;
+	int field_start_x;
+	int field_start_y;
+	int field_end_x;
+	int field_end_y;
+
+} ActivePiece;
+
+void LCD_DrawNewTetromino( ActivePiece* p );
+
+void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift );
+void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift );
+void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift );
+int possibleLeftShift( ActivePiece* p, uint16_t shift );
+int possibleRightShift( ActivePiece* p, uint16_t shift );
+int possibleDownShift( ActivePiece* p, uint16_t shift );
+
+/* rewatch and fix */
+void rotateTetromino( ActivePiece* p );
 
 void LCD_DrawCube( uint16_t x, uint16_t y, uint16_t bkColor );
 void LCD_ClearCube ( uint16_t x, uint16_t y );
 void LCD_ClearRow ( uint16_t y );
 int fullRow( uint16_t row );
-void LCD_DrawTetromino( Piece* p );
 void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift );
-void enableGoDown();
-void disableGoDown();
 

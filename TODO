@@ -16,10 +16,25 @@ ParsePieceShape() -> identifica l'area occupata dal pezzo (sarebbe da mettere co
 Negli shift prima di tutto devi controllare se TUTTO lo spostamento si puo' fare e successivamente fallo.
 
 
-Mantenere il colore del pezzo quando scende
 Rotazioni
 Punteggio
 
+
+Sistema le funzioni con commento: /* rewatch and fix */
+Sistema possibleRotate()
+
+Funzione piecePlaced() per quando il pezzo viene posizionato
+
+
+
+typedef struct{
+	int fill;
+	uint16_t color;
+} FieldBlock;
+
+FieldBlock playField[20][10]
+
+Cosi' da avere informazioni in piu' sui blocchi del campo.
 
 
 

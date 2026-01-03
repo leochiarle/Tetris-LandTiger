@@ -24,24 +24,23 @@
 ******************************************************************************/
 
 /* Global variable and function */
-extern Piece activePiece;
+extern ActivePiece activePiece;
 extern int goDown;
 extern int stopDownShift;
-
-void createTetromino();
+extern int tetrominoStopped;
 
 
 void TIMER0_IRQHandler (void)
 {
 	
 	// i valori vanno aggiornati nel timer perche' il timer e' indipendente e non aspetta la fine delle funzioni chiamate
-	if( activePiece.end_y > 0 && !stopDownShift){
+	if( activePiece.field_end_y > 0 && !stopDownShift){
 		
 		goDown++;
 		
 	}else{
 		
-		createTetromino();
+		tetrominoStopped++;
 	
 	}
 	

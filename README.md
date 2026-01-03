@@ -15,14 +15,16 @@ activePiece constain start_x, start_y, end_x, end_y. They delimit the tetromino'
 
 Once the tetromino is draw on the filed, those values become the values adapted to the field.
 
+I use the polling technique to get the joystick value. But, maybe I can change it like the timer structure, with a variable that is modified while the interrupt occurs.
+
 ---
 
 ### During the development
 
 - To include new files in the project you have to right click on project directory and:
 
-1. Select Manage Project Items, create the directory you want to add and, if you want to add some existing files, click Add Files...
-2. Got to Option for Target > C/C++ > Include paths, after that add the path of the directory you want to include
+    1. Select Manage Project Items, create the directory you want to add and, if you want to add some existing files, click Add Files...
+    2. Got to Option for Target > C/C++ > Include paths, after that add the path of the directory you want to include
 
 
 - I can't use RIT (Repetitive Interrupt Timer) to polling the joystick move and execute function to modify the LCD because in the ISR (Interrupt Service Routine) you can't use: printf, sprintf, LCD function or UART blocking; because they can cause internal interrupt, deadlock or HardFault.

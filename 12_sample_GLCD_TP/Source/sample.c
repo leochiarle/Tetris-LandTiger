@@ -37,11 +37,13 @@ extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emul
 #endif
 
 int playField[FIELD_WIDTH_BLOCKS][FIELD_HEIGHT_BLOCKS];
-Piece activePiece;
+ActivePiece activePiece;
 int goDown = 0;
 int stopDownShift = 0;
+int tetrominoStopped = 0;
 
 void * memcpy(void *, const void *, size_t);
+void free(void *);
 
 
 	Tetrominos tetrominos = {
@@ -216,7 +218,7 @@ void createTetromino(){
 
 	}
 	stopDownShift = 0;
-	LCD_DrawTetromino(&activePiece);
+	LCD_DrawNewTetromino( &activePiece );
 }
 
 void initEverithing(){
@@ -225,40 +227,48 @@ void initEverithing(){
 	
   LCD_Initialization();
 	LCD_Clear(Black);
-	//GUI_Text(0, 280, (uint8_t *) " touch here : 1 sec to clear  ", Red, White);
-	
-	/*// PADDING
-	int i = 0, j = 0;
-	for(; i < PADDING; i++){
-		LCD_DrawLine(i, i, i, (PLAY_FIELD_HEIGHT+PADDING)-i, White); // | sx
-		LCD_DrawLine((PLAY_FIELD_WIDTH+PADDING)-i, i, (PLAY_FIELD_WIDTH+PADDING)-i, (PLAY_FIELD_HEIGHT+PADDING)-i, White); // | dx
-		LCD_DrawLine(i, i, (PLAY_FIELD_WIDTH+PADDING)-i, i, White); // - top
-		LCD_DrawLine(i, (PLAY_FIELD_HEIGHT+PADDING)-i, (PLAY_FIELD_WIDTH+PADDING)-i, (PLAY_FIELD_HEIGHT+PADDING)-i, White); // - bottom
-	}
-	*/
-	
+
 	joystick_init();											/* Joystick Initialization            */
 	
 }
 
 
 int main(void)
-{
+ {
   
 	initEverithing();
 	
 	LCD_DrawLine(MAX_X - INFO_FIELD + 1, MAX_Y - PLAY_FIELD_HEIGHT, MAX_X - INFO_FIELD + 1, MAX_Y, White);
 	LCD_DrawLine(0, MAX_Y - PLAY_FIELD_HEIGHT - 1, PLAY_FIELD_WIDTH, MAX_Y - PLAY_FIELD_HEIGHT - 1, White);
 	
-	//LCD_DrawTetromino(I);
-	createTetromino();
+	
+	memcpy(&activePiece, &L, sizeof(Piece));
+	LCD_DrawNewTetromino( &activePiece );
+	//createTetromino();
 	
 	init_timer(0, 0x4E2 ); 						/* 500us * 25MHz = 1.25*10^6 = 0x1312D0 */
 	enable_timer(0);	
 	 
 	while(1){
+		
+		if( tetrominoStopped ){
+			
+			disable_timer(0);	// stop timer 0
+			
+			createTetromino();
+			tetrominoStopped--;
+			
+			enable_timer(0);	// resume timer 0
+			
+		}
 		 
 		if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	// Joytick UP pressed 
+			
+			disable_timer(0);	// stop timer 0
+			
+			rotateTetromino( &activePiece );
+
+			enable_timer(0);	// resume timer 0
 			
 		} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 && activePiece.end_x < FIELD_WIDTH_BLOCKS){	// Joytick RIGHT pressed 
 			
@@ -285,7 +295,7 @@ int main(void)
 			enable_timer(0);	// resume timer 0
 		}
 		
-		if(goDown){
+		if( goDown ){
 			
 			disable_timer(0);	// stop timer 0
 			
