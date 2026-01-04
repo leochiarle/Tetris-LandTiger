@@ -1,22 +1,14 @@
-
+-------------------------------------------------------------------------------------------------------------------------------------------------
+TODO:
+-------------------------------------------------------------------------------------------------------------------------------------------------
 Riguarda drawCube() per capire come disegna
 Riguarda cleanCube(), e i 3 shift
-
-Negli shift controlla che la riga un cui stai shiftando sia vuota
 
 Calcolati la profondità del pezzo all'inizio dello shift (es. Cubo -> inizia da 3, 19 ed è profondo 2, quindi fino a 3,17)
 
 ParsePieceShape() -> identifica l'area occupata dal pezzo (sarebbe da mettere come prima operaizone negli shift cosi' da sapere come muoverti)
 
 
-
-
-
-
-Negli shift prima di tutto devi controllare se TUTTO lo spostamento si puo' fare e successivamente fallo.
-
-
-Rotazioni
 Punteggio
 
 
@@ -26,15 +18,26 @@ Sistema possibleRotate()
 Funzione piecePlaced() per quando il pezzo viene posizionato
 
 
+possibleRotation() 
 
-typedef struct{
-	int fill;
-	uint16_t color;
-} FieldBlock;
+l ed l rovesciata non funzionano:
+--|
+  |
+| |
+|
+|--
 
-FieldBlock playField[20][10]
+la randomizzazione non funziona bene
 
-Cosi' da avere informazioni in piu' sui blocchi del campo.
+fare polling joystick ogni 50 ms
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+DONE TODAY:
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 
 

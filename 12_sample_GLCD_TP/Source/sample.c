@@ -36,7 +36,7 @@
 extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emulator to find the symbol (can be placed also inside system_LPC17xx.h but since it is RO, it needs more work)
 #endif
 
-int playField[FIELD_WIDTH_BLOCKS][FIELD_HEIGHT_BLOCKS];
+FieldBlock playField[FIELD_HEIGHT_BLOCKS][FIELD_WIDTH_BLOCKS];
 ActivePiece activePiece;
 int goDown = 0;
 int stopDownShift = 0;
@@ -232,7 +232,6 @@ void initEverithing(){
 	
 }
 
-
 int main(void)
  {
   
@@ -246,14 +245,43 @@ int main(void)
 	LCD_DrawNewTetromino( &activePiece );
 	//createTetromino();
 	
+	/*	*/
+	LCD_DrawCube(0, 0, Yellow);
+	LCD_DrawCube(1, 0, Yellow);
+	LCD_DrawCube(2, 0, Yellow);
+	LCD_DrawCube(3, 0, Yellow);
+	LCD_DrawCube(4, 0, Yellow);
+	LCD_DrawCube(5, 0, Yellow);
+	LCD_DrawCube(6, 0, Yellow);
+	LCD_DrawCube(7, 0, Yellow);
+	//LCD_DrawCube(8, 0, Yellow);
+	//LCD_DrawCube(9, 0, Yellow);
+	
+	LCD_DrawCube(0, 1, Red);
+	LCD_DrawCube(1, 1, Red);
+	LCD_DrawCube(2, 1, Red);
+	LCD_DrawCube(3, 1, Red);
+	LCD_DrawCube(4, 1, Red);
+	LCD_DrawCube(5, 1, Red);
+	LCD_DrawCube(6, 1, Red);
+	LCD_DrawCube(7, 1, Red);
+	//LCD_DrawCube(8, 1, Red);
+	//LCD_DrawCube(9, 1, Red);
+	
+	//LCD_ShiftRows( 0, 1 );
+	
+	// It is the last thing to do before start
 	init_timer(0, 0x4E2 ); 						/* 500us * 25MHz = 1.25*10^6 = 0x1312D0 */
 	enable_timer(0);	
+
 	 
 	while(1){
 		
 		if( tetrominoStopped ){
 			
 			disable_timer(0);	// stop timer 0
+			
+			shiftRowsFull();
 			
 			createTetromino();
 			tetrominoStopped--;

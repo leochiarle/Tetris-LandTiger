@@ -674,7 +674,7 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
 *********************************************************************************************************/
 
 /* Global variable and function */
-extern int playField[FIELD_WIDTH_BLOCKS][FIELD_HEIGHT_BLOCKS];
+extern FieldBlock playField[FIELD_HEIGHT_BLOCKS][FIELD_WIDTH_BLOCKS];
 extern Piece activePiece;
 extern int stopDownShift;
 
@@ -695,7 +695,7 @@ int possibleDownShift( ActivePiece* p, uint16_t shift ){
 		
 		/* Check if for every block on the bottom side there is a free space on the next bottom line */
 		for( ; x1 >= x && !stopDownShift; x1-- ){
-			if( playField[x1][y1] == 1 && y1-1 >= 0 && !(playField[x1][y1-1] == 0) ){
+			if( playField[y1][x1].full == 1 && y1-1 >= 0 && !(playField[y1-1][x1].full == 0) ){
 				
 				stopDownShift = 1;
 				possible = 0;
@@ -714,11 +714,11 @@ void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift ){
 		if( possibleDownShift( p, shift ) ){
 			for( ; y1 <= y; y1++ ){
 				for( ; x1 >= x; x1-- ){
-					if( playField[x1][y1] == 1 && y1-1 >= 0 && playField[x1][y1-1] == 0 ){
+					if( playField[y1][x1].full == 1 && y1-1 >= 0 && playField[y1-1][x1].full == 0 ){
 						
 						LCD_DrawCube(x1, y1-1, p->color);
 						LCD_ClearCube(x1, y1);	// If I don't clear the cube, previous if statement become false during the next iteration
-						playField[x1][y1-1] = 1;
+						playField[y1-1][x1].full = 1;
 					
 					}
 				}
@@ -748,7 +748,7 @@ int possibleLeftShift( ActivePiece* p, uint16_t shift ){
 		
 		/* Check if for every block on the leftmost side there is a free space on the next left column */
 		for( ; y >= y1 && possible; y-- ){
-			if( playField[x][y] == 1 && x-1 >= 0 && !(playField[x-1][y] == 0) ){
+			if( playField[y][x].full == 1 && x-1 >= 0 && !(playField[y][x-1].full == 0) ){
 					possible = 0;		
 			}
 		}
@@ -766,11 +766,11 @@ void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift ){
 		
 		for( ; x <= x1; x++ ){
 			for( ; y >= y1; y-- ){
-				if( playField[x][y] == 1 && x-1 >= 0 && playField[x-1][y] == 0 ){
+				if( playField[y][x].full == 1 && x-1 >= 0 && playField[y][x-1].full == 0 ){
 					
 					LCD_DrawCube(x-1, y, p->color);
 					LCD_ClearCube(x, y);
-					playField[x-1][y] = 1;
+					playField[y][x-1].full = 1;
 				
 				}
 			}
@@ -799,7 +799,7 @@ int possibleRightShift( ActivePiece* p, uint16_t shift ){
 		
 		/* Check if for every block on the rightmost side there is a free space on the next right column */
 		for( ; y1 <= y && possible; y1++ ){
-			if( playField[x1][y1] == 1 && x1+1 < FIELD_WIDTH_BLOCKS && !(playField[x1+1][y1] == 0) ){
+			if( playField[y1][x1].full == 1 && x1+1 < FIELD_WIDTH_BLOCKS && !(playField[y1][x1+1].full == 0) ){
 				
 				possible = 0;
 			
@@ -818,11 +818,11 @@ void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift ){
 		
 		for( ; x1 >= x; x1-- ){
 			for( ; y1 <= y; y1++ ){
-				if( playField[x1][y1] == 1 && x1+1 < FIELD_WIDTH_BLOCKS && playField[x1+1][y1] == 0 ){
+				if( playField[y1][x1].full == 1 && x1+1 < FIELD_WIDTH_BLOCKS && playField[y1][x1+1].full == 0 ){
 					
 					LCD_DrawCube(x1+1, y1, p->color);
 					LCD_ClearCube(x1, y1);
-					playField[x1+1][y1] = 1;
+					playField[y1][x1+1].full = 1;
 				
 				}
 			}
@@ -927,6 +927,7 @@ int possibleRotate( ActivePiece* p ){
 void rotateTetromino( ActivePiece* p ){
 	
 	if( possibleRotate( p ) ){
+		
 		int n = 4;
 		int aux[n][n];
 		
@@ -940,6 +941,9 @@ void rotateTetromino( ActivePiece* p ){
 				}
 				j=0;
 		}
+		
+		// Clear old tetromino
+		LCD_ClearTetromino( p );
 		
 		// Calc new field_start_x e field_start_y
 		p->field_start_x = p->field_start_x - p->start_x; // top-left angle
@@ -989,9 +993,6 @@ void rotateTetromino( ActivePiece* p ){
 		p->field_start_x = p->field_start_x + p->start_x;
 		p->field_start_y = p->field_start_y - p->start_y;	
 		
-		// Clear old tetromino
-		LCD_ClearTetromino( p );
-		
 		// Draw new tetromino
 		LCD_DrawTetromino( p );
 	
@@ -999,47 +1000,108 @@ void rotateTetromino( ActivePiece* p ){
 }
 
 
-
-
-
-
-/* partendo da una row di input shifta di "shift" un numero dato di row (number)*/
-void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift ){
+/* Shift rows down by 1 from "fromRow" to "toRow" included */
+void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow ){
 	
-	if(row < FIELD_HEIGHT_BLOCKS && row >= 0 && number < FIELD_HEIGHT_BLOCKS && number >= 0 && shift < FIELD_HEIGHT_BLOCKS && shift >= 0 ) {
+	if( fromRow < FIELD_HEIGHT_BLOCKS && fromRow >= 0 && toRow < FIELD_HEIGHT_BLOCKS && toRow >= 0 && fromRow <= toRow ) {
 		
-		int i = row-number;
-		int j = 0;
+		int y = fromRow, x = 0;
 		
-		for(; i <= row; i++ ){
-			for(; j < FIELD_WIDTH_BLOCKS; j++ ){
-				if(playField[j][i] == 1){
-					
-					LCD_DrawCube(j, i-1, Red); // FIX: il colore dovrebbe essere lo stesso della riga che sto copiando
-					LCD_ClearCube(j, i);
-					playField[j][i-1] = 1;
-				
-				}else { // cancella cubo
-				
-					LCD_ClearCube(j, i-1);
-					playField[j][i-1] = 0;
-
-				}
+		for( ; y <= toRow; y++ ){
+			for( ; x < FIELD_WIDTH_BLOCKS; x++ ){
+					if( playField[y+1][x].full == 1 ){
+						
+						LCD_DrawCube( x, y, playField[y+1][x].color );
+						
+					}else{
+						
+						LCD_ClearCube( x, y );
+						
+					}
 			}
-			j = 0;
+			
+			x = 0;
 		}
+		
 	}	
 }
 
+void shiftRowsFull(){
+	
+	int y = 0, x = 0, full = 1;
+	
+	for( ; y <= FIELD_HEIGHT_BLOCKS; y++ ){
+		for( ; x < FIELD_WIDTH_BLOCKS && full; x++ ){
+			if( playField[y][x].full == 0 ){
+				
+				full = 0;
+			
+			}
+		}
+		
+		if( full ){
+			LCD_ShiftRows( y, firstRowEmpty() );
+			y--;
+		}
+		
+		x = 0;
+		full = 1;
+	}
 
-int fullRow( uint16_t row ){
+}
+
+
+int firstRowEmpty(){
 	
-	int full = 1;
-	int i = 0;
+	int y = 0, x = 0, empty = 1;
 	
-	if( row >= 0 && row < FIELD_HEIGHT_BLOCKS ){
-		for( ; i < FIELD_WIDTH_BLOCKS && full; i++ ){
-			if( playField[i][row] != 1 ){
+	for( ; y <= FIELD_HEIGHT_BLOCKS; y++ ){
+		for( ; x < FIELD_WIDTH_BLOCKS && empty; x++ ){
+			if( playField[y][x].full == 1 ){
+				
+				empty = 0;
+			
+			}
+		}
+		
+		if( empty ){
+			return y;
+		}
+		
+		x = 0;
+		empty = 1;
+	}
+	
+	return -1;
+}
+
+
+
+
+
+
+
+
+
+
+/* Starting from "from" and going to "to" checks if the rows are completelly full */
+int howManyfullRows( uint16_t from, uint16_t to ){
+	
+	int i = 0, full = 1;
+	
+	
+	return full;
+}
+
+
+/* Starting from "from" and going to "to" checks if the rows are completelly full */
+int fullRows( uint16_t from, uint16_t to ){
+	
+	int i = 0, full = 1;
+	
+	if( from >= 0 && from < FIELD_HEIGHT_BLOCKS && to >= 0 && to < FIELD_HEIGHT_BLOCKS && from <= to){
+		for( ; i < FIELD_WIDTH_BLOCKS && full && from <= to; i++, from++ ){
+			if( playField[from][i].full != 1 ){
 				full = 0;
 			}
 		}
@@ -1047,6 +1109,8 @@ int fullRow( uint16_t row ){
 	
 	return full;
 }
+
+
 
 
 void LCD_DrawCube ( uint16_t x, uint16_t y, uint16_t color ){
@@ -1068,7 +1132,8 @@ void LCD_DrawCube ( uint16_t x, uint16_t y, uint16_t color ){
 			block--;
 		}while(block > 0);
 	
-		playField[x][y] = 1;
+		playField[y][x].full = 1;
+		playField[y][x].color = color;
 	}
 }
 
@@ -1091,7 +1156,8 @@ void LCD_ClearCube ( uint16_t x, uint16_t y ){
 			block--;
 		}while(block > 0);
 	
-		playField[x][y] = 0;
+		playField[y][x].full = 0;
+		playField[y][x].color = Black;
 	}
 }
 
@@ -1103,7 +1169,7 @@ void LCD_ClearRow ( uint16_t y ){
 		
 		for(; x < FIELD_WIDTH_BLOCKS; x++){
 			LCD_ClearCube(x, y);
-			playField[x][y] = 0;
+			playField[y][x].full = 0;
 		}
 	}
 	

@@ -126,6 +126,13 @@ typedef struct {
 
 typedef struct {
 	
+	int full;
+	uint16_t color;
+
+} FieldBlock;
+
+typedef struct {
+	
 	uint16_t color;
 	int tetromino[4][4];
 	int start_x;
@@ -155,9 +162,12 @@ void LCD_DrawNewTetromino( ActivePiece* p );
 void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift );
 void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift );
 void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift );
+void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow );
 int possibleLeftShift( ActivePiece* p, uint16_t shift );
 int possibleRightShift( ActivePiece* p, uint16_t shift );
 int possibleDownShift( ActivePiece* p, uint16_t shift );
+void shiftRowsFull();
+int firstRowEmpty();
 
 /* rewatch and fix */
 void rotateTetromino( ActivePiece* p );
@@ -166,5 +176,4 @@ void LCD_DrawCube( uint16_t x, uint16_t y, uint16_t bkColor );
 void LCD_ClearCube ( uint16_t x, uint16_t y );
 void LCD_ClearRow ( uint16_t y );
 int fullRow( uint16_t row );
-void LCD_ShiftRows( uint16_t row, uint16_t number, uint16_t shift );
 
