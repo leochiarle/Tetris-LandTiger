@@ -21,6 +21,8 @@
 *********************************************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
+#ifndef __HEADER_FILES__
+#define __HEADER_FILES__
 #include "LPC17xx.h"
 #include "GLCD.h"
 #include "timer.h"
@@ -30,6 +32,8 @@
 #include <stdio.h> /*for sprintf*/
 #include <stdlib.h>
 #include <time.h>
+
+#endif
 
 
 #ifdef SIMULATOR
@@ -41,49 +45,13 @@ ActivePiece activePiece;
 int goDown = 0;
 int stopDownShift = 0;
 int tetrominoStopped = 0;
+int gameScore = 0;
+int highestScore = 0;
+char strHighestScore[13];
+char strScore[13];
 
 void * memcpy(void *, const void *, size_t);
-void free(void *);
 
-
-	Tetrominos tetrominos = {
-		
-		.I = {{0, 0, 0, 0}, 
-					{1, 1, 1, 1},
-					{0, 0, 0, 0},
-					{0, 0, 0, 0}},
-		
-		.O = {{0, 0, 0, 0}, 
-					{0, 1, 1, 0},
-					{0, 1, 1, 0},
-					{0, 0, 0, 0}},
-		
-		.T = {{0, 0, 0, 0}, 
-					{1, 1, 1, 0},
-					{0, 1, 0, 0},
-					{0, 0, 0, 0}},
-		
-		.J = {{0, 0, 1, 0}, 
-					{0, 0, 1, 0},
-					{0, 1, 1, 0},
-					{0, 0, 0, 0}},
-		
-		.L = {{0, 1, 0, 0}, 
-					{0, 1, 0, 0}, 
-					{0, 1, 1, 0},
-					{0, 0, 0, 0}},
-		
-		.S = {{0, 0, 0, 0}, 
-					{0, 1, 1, 0},
-					{1, 1, 0, 0},
-					{0, 0, 0, 0}},
-		
-		.Z = {{0, 0, 0, 0}, 
-					{1, 1, 0, 0},
-					{0, 1, 1, 0},
-					{0, 0, 0, 0}}
-	}; // TODO: aggiungere le rotazioni (?)
-	
 	
 	Piece I = {
 		.color = Cyan,
@@ -221,6 +189,20 @@ void createTetromino(){
 	LCD_DrawNewTetromino( &activePiece );
 }
 
+void initStringsScore(){
+	
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 20, (uint8_t *) "Highscore:", Red, White);
+	 
+	sprintf(strHighestScore, "%d", gameScore);
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 35, (uint8_t *) strHighestScore, Red, White);
+	 
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), MAX_Y * 1 / 5, (uint8_t *) "Score:", Red, White);
+
+	sprintf(strScore, "%d", gameScore);
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), MAX_Y * 1 / 4, (uint8_t *) strScore, Red, White);
+	
+}
+
 void initEverithing(){
 	
 	SystemInit();  												/* System Initialization (i.e., PLL)  */
@@ -229,6 +211,8 @@ void initEverithing(){
 	LCD_Clear(Black);
 
 	joystick_init();											/* Joystick Initialization            */
+	
+	initStringsScore();
 	
 }
 
@@ -239,34 +223,26 @@ int main(void)
 	
 	LCD_DrawLine(MAX_X - INFO_FIELD + 1, MAX_Y - PLAY_FIELD_HEIGHT, MAX_X - INFO_FIELD + 1, MAX_Y, White);
 	LCD_DrawLine(0, MAX_Y - PLAY_FIELD_HEIGHT - 1, PLAY_FIELD_WIDTH, MAX_Y - PLAY_FIELD_HEIGHT - 1, White);
+	 
 	
-	
-	memcpy(&activePiece, &L, sizeof(Piece));
+	/*	*/
+	memcpy(&activePiece, &S, sizeof(Piece));
 	LCD_DrawNewTetromino( &activePiece );
 	//createTetromino();
 	
-	/*	*/
-	LCD_DrawCube(0, 0, Yellow);
-	LCD_DrawCube(1, 0, Yellow);
-	LCD_DrawCube(2, 0, Yellow);
-	LCD_DrawCube(3, 0, Yellow);
-	LCD_DrawCube(4, 0, Yellow);
-	LCD_DrawCube(5, 0, Yellow);
-	LCD_DrawCube(6, 0, Yellow);
-	LCD_DrawCube(7, 0, Yellow);
-	//LCD_DrawCube(8, 0, Yellow);
-	//LCD_DrawCube(9, 0, Yellow);
-	
-	LCD_DrawCube(0, 1, Red);
-	LCD_DrawCube(1, 1, Red);
-	LCD_DrawCube(2, 1, Red);
-	LCD_DrawCube(3, 1, Red);
-	LCD_DrawCube(4, 1, Red);
-	LCD_DrawCube(5, 1, Red);
-	LCD_DrawCube(6, 1, Red);
-	LCD_DrawCube(7, 1, Red);
-	//LCD_DrawCube(8, 1, Red);
-	//LCD_DrawCube(9, 1, Red);
+	int i = 0;
+	for( ; i < 4; i++){
+		LCD_DrawCube(0, i, Yellow);
+		LCD_DrawCube(1, i, Yellow);
+		LCD_DrawCube(2, i, Yellow);
+		LCD_DrawCube(3, i, Yellow);
+		LCD_DrawCube(4, i, Yellow);
+		LCD_DrawCube(5, i, Yellow);
+		LCD_DrawCube(6, i, Yellow);
+		LCD_DrawCube(7, i, Yellow);
+		LCD_DrawCube(8, i, Yellow);
+		//LCD_DrawCube(9, i, Yellow);
+	}
 	
 	//LCD_ShiftRows( 0, 1 );
 	
@@ -282,6 +258,10 @@ int main(void)
 			disable_timer(0);	// stop timer 0
 			
 			shiftRowsFull();
+			
+			gameScore += 10;
+			sprintf(strScore, "%d", gameScore);
+			GUI_Text(MAX_X - (INFO_FIELD / 1.1), MAX_Y * 1 / 4, (uint8_t *) strScore, Red, White);
 			
 			createTetromino();
 			tetrominoStopped--;

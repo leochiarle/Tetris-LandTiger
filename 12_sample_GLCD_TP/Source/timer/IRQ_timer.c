@@ -7,11 +7,14 @@
 ** Correlated files:    timer.h
 **--------------------------------------------------------------------------------------------------------
 *********************************************************************************************************/
+#ifndef __HEADER_FILES__
+#define __HEADER_FILES__
 #include <string.h>
 #include "LPC17xx.h"
 #include "timer.h"
 #include "GLCD.h" 
 #include <stdio.h> /*for sprintf*/
+#endif
 
 /******************************************************************************
 ** Function name:		Timer0_IRQHandler

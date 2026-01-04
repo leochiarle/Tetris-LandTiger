@@ -677,6 +677,7 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
 extern FieldBlock playField[FIELD_HEIGHT_BLOCKS][FIELD_WIDTH_BLOCKS];
 extern Piece activePiece;
 extern int stopDownShift;
+extern int gameScore;
 
 
 
@@ -705,8 +706,8 @@ int possibleDownShift( ActivePiece* p, uint16_t shift ){
 	}
 	
 	return possible;
-	
 }
+
 void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift ){
 	
 		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
@@ -732,6 +733,35 @@ void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift ){
 			
 		}	
 }
+/* FIX: con questo non funzionano le L e le T. Quando vengono create al primo downShift non funzionano bene
+void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift ){
+	
+		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
+		int start_x = p->start_x, start_y = p->start_y, end_x = p->end_x, end_y = p->end_y;
+		
+		if( possibleDownShift( p, shift ) ){
+			for( ; y1 <= y; y1++, start_y++ ){
+				for( ; x1 >= x; x1--, start_x++ ){
+					if( p->tetromino[start_y][start_x] == 1 && y1-1 >= 0 && playField[y1-1][x1].full == 0 ){
+						
+						LCD_DrawCube(x1, y1-1, p->color);
+						LCD_ClearCube(x1, y1);	// If I don't clear the cube, previous if statement become false during the next iteration
+						playField[y1-1][x1].full = 1;
+					
+					}
+				}
+				
+				x1 = p->field_end_x;
+				start_x = p->start_x;
+			
+			}
+			
+			p->field_start_y--;
+			p->field_end_y--;
+			
+		}	
+}
+*/
 
 /*************************************
 					LEFT SHIFT
@@ -1028,7 +1058,7 @@ void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow ){
 
 void shiftRowsFull(){
 	
-	int y = 0, x = 0, full = 1;
+	int y = 0, x = 0, full = 1, numShiftedRows = 0;
 	
 	for( ; y <= FIELD_HEIGHT_BLOCKS; y++ ){
 		for( ; x < FIELD_WIDTH_BLOCKS && full; x++ ){
@@ -1042,10 +1072,17 @@ void shiftRowsFull(){
 		if( full ){
 			LCD_ShiftRows( y, firstRowEmpty() );
 			y--;
+			numShiftedRows++;
 		}
 		
 		x = 0;
 		full = 1;
+	}
+	
+	if( numShiftedRows == 4 ){
+		gameScore += 600;
+	}else{
+		gameScore += 100 * numShiftedRows;
 	}
 
 }
@@ -1077,38 +1114,6 @@ int firstRowEmpty(){
 
 
 
-
-
-
-
-
-
-
-/* Starting from "from" and going to "to" checks if the rows are completelly full */
-int howManyfullRows( uint16_t from, uint16_t to ){
-	
-	int i = 0, full = 1;
-	
-	
-	return full;
-}
-
-
-/* Starting from "from" and going to "to" checks if the rows are completelly full */
-int fullRows( uint16_t from, uint16_t to ){
-	
-	int i = 0, full = 1;
-	
-	if( from >= 0 && from < FIELD_HEIGHT_BLOCKS && to >= 0 && to < FIELD_HEIGHT_BLOCKS && from <= to){
-		for( ; i < FIELD_WIDTH_BLOCKS && full && from <= to; i++, from++ ){
-			if( playField[from][i].full != 1 ){
-				full = 0;
-			}
-		}
-	}
-	
-	return full;
-}
 
 
 
@@ -1159,20 +1164,6 @@ void LCD_ClearCube ( uint16_t x, uint16_t y ){
 		playField[y][x].full = 0;
 		playField[y][x].color = Black;
 	}
-}
-
-void LCD_ClearRow ( uint16_t y ){
-	
-	if(y < FIELD_HEIGHT_BLOCKS && y >= 0){
-		
-		int x = 0;
-		
-		for(; x < FIELD_WIDTH_BLOCKS; x++){
-			LCD_ClearCube(x, y);
-			playField[y][x].full = 0;
-		}
-	}
-	
 }
 
 

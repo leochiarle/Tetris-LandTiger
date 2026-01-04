@@ -114,18 +114,6 @@ void GUI_Text(uint16_t Xpos, uint16_t Ypos, uint8_t *str,uint16_t Color, uint16_
 
 typedef struct {
 	
-	const int I[4][4];
-	const int O[4][4];
-	const int T[4][4];
-	const int J[4][4];
-	const int L[4][4];
-	const int S[4][4];
-	const int Z[4][4];
-
-} Tetrominos;
-
-typedef struct {
-	
 	int full;
 	uint16_t color;
 
@@ -163,6 +151,7 @@ void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift );
 void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift );
 void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift );
 void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow );
+void rotateTetromino( ActivePiece* p );
 int possibleLeftShift( ActivePiece* p, uint16_t shift );
 int possibleRightShift( ActivePiece* p, uint16_t shift );
 int possibleDownShift( ActivePiece* p, uint16_t shift );
@@ -170,10 +159,7 @@ void shiftRowsFull();
 int firstRowEmpty();
 
 /* rewatch and fix */
-void rotateTetromino( ActivePiece* p );
 
 void LCD_DrawCube( uint16_t x, uint16_t y, uint16_t bkColor );
 void LCD_ClearCube ( uint16_t x, uint16_t y );
-void LCD_ClearRow ( uint16_t y );
-int fullRow( uint16_t row );
 
