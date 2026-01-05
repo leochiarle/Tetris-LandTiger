@@ -1,7 +1,13 @@
 #include "button.h"
-#include "lpc17xx.h"
+#include "LPC17xx.h"
+#include "GLCD.h" 
 
-extern int down;
+extern int gamePaused;
+extern int gameOver;
+extern ActivePiece activePiece;
+extern int tetrominoStopped;
+extern int restartGame;
+extern int dropToBottom;
 
 void EINT0_IRQHandler (void)	  	/* INT0														 */
 {		
@@ -12,14 +18,28 @@ void EINT0_IRQHandler (void)	  	/* INT0														 */
 
 void EINT1_IRQHandler (void)	  	/* KEY1														 */
 {
-	NVIC_DisableIRQ(EINT1_IRQn);		/* disable Button interrupts			 */
-	LPC_PINCON->PINSEL4    &= ~(1 << 22);     /* GPIO pin selection */
-	down=1;
+	
+	if( gameOver ){
+		
+		restartGame++;
+		
+	}else{
+		
+		if( gamePaused ){
+			gamePaused--;
+		}else{
+			gamePaused++;
+		}
+		
+	}
+	
 	LPC_SC->EXTINT &= (1 << 1);     /* clear pending interrupt         */
 }
 
 void EINT2_IRQHandler (void)	  	/* KEY2														 */
 {
+	
+	dropToBottom++;
 	
   LPC_SC->EXTINT &= (1 << 2);     /* clear pending interrupt         */    
 }

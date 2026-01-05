@@ -44,11 +44,17 @@ FieldBlock playField[FIELD_HEIGHT_BLOCKS][FIELD_WIDTH_BLOCKS];
 ActivePiece activePiece;
 int goDown = 0;
 int stopDownShift = 0;
+int dropToBottom = 0;
 int tetrominoStopped = 0;
 int gameScore = 0;
 int highestScore = 0;
+int lineCount = 0;
+int gamePaused = 1;
+int gameOver = 0;
+int restartGame = 0;
 char strHighestScore[13];
 char strScore[13];
+char strLineCount[13];
 
 void * memcpy(void *, const void *, size_t);
 
@@ -137,24 +143,11 @@ void * memcpy(void *, const void *, size_t);
 		.end_y = 2
 	};
 	
-	Piece TEST = {
-		.color = Red,
-		.tetromino = {{1, 1, 1, 1}, 
-									{1, 1, 1, 1},
-									{1, 1, 1, 1},
-									{1, 1, 1, 1}},
-		.start_x = 0,
-		.start_y = 0,
-		.end_x = 4,
-		.end_y = 4
-	};
-	
 
 void createTetromino(){
 	
-	int max = 6, min = 0;
-	int rd_num = rand() % (max - min + 1) + min;
-	
+	//int rd_num = rand() % 7;
+	int rd_num = 4;
 	switch(rd_num){
 		case 0:
 			memcpy(&activePiece, &I, sizeof(Piece));
@@ -185,21 +178,39 @@ void createTetromino(){
 			break;
 
 	}
+	
+	int aux_x = activePiece.start_x, aux_y = activePiece.start_y;
+	
+	activePiece.field_start_x = (FIELD_WIDTH_BLOCKS/2)-((activePiece.end_x - aux_x));
+	activePiece.field_start_y = FIELD_HEIGHT_BLOCKS-1;
+	activePiece.field_end_x = activePiece.field_start_x + (activePiece.end_x - aux_x);
+	activePiece.field_end_y = activePiece.field_start_y - (activePiece.end_y - aux_y);
+	
 	stopDownShift = 0;
-	LCD_DrawNewTetromino( &activePiece );
+	
+	isGameOver( &activePiece ); // Has be checked before draw the nre tetromino
+	LCD_DrawTetromino( &activePiece );
 }
 
 void initStringsScore(){
 	
+	// Highest Score
 	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 20, (uint8_t *) "Highscore:", Red, White);
 	 
-	sprintf(strHighestScore, "%d", gameScore);
+	sprintf(strHighestScore, "%d", highestScore);
 	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 35, (uint8_t *) strHighestScore, Red, White);
 	 
-	GUI_Text(MAX_X - (INFO_FIELD / 1.1), MAX_Y * 1 / 5, (uint8_t *) "Score:", Red, White);
+	// Game Score
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 60, (uint8_t *) "Score:", Red, White);
 
 	sprintf(strScore, "%d", gameScore);
-	GUI_Text(MAX_X - (INFO_FIELD / 1.1), MAX_Y * 1 / 4, (uint8_t *) strScore, Red, White);
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 75, (uint8_t *) strScore, Red, White);
+	
+	// Line Count
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 100, (uint8_t *) "Line:", Red, White);
+
+	sprintf(strLineCount, "%d", gameScore);
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 115, (uint8_t *) strLineCount, Red, White);
 	
 }
 
@@ -211,8 +222,45 @@ void initEverithing(){
 	LCD_Clear(Black);
 
 	joystick_init();											/* Joystick Initialization            */
+  BUTTON_init();												/* BUTTON Initialization              */
 	
 	initStringsScore();
+	
+	init_timer(0, 0x4E2 ); 						/* 500us * 25MHz = 1.25*10^6 = 0x1312D0 */
+	
+}
+
+void cleanPlayFied(){
+	
+	int x = 0, y = 0;
+	
+	for( ; y < FIELD_HEIGHT_BLOCKS; y++ ){
+		for( ; x < FIELD_WIDTH_BLOCKS; x++ ){
+			if( playField[y][x].full == 1 ){
+				LCD_CleanCube( x, y );
+			}
+		}
+		x = 0;
+	}
+}
+
+void newGame(){
+	
+	goDown = 0;
+	stopDownShift = 0;
+	tetrominoStopped = 0;
+	gameScore = 0;
+	lineCount = 0;
+	gamePaused = 1;
+	gameOver = 0;
+	restartGame = 0;
+	
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 140, (uint8_t *) "Gameover", Black, Black); // clean text "gameover"
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 75, (uint8_t *) "00000000000", Black, Black); // clean text score point
+	
+	initStringsScore();
+	cleanPlayFied();
+	createTetromino();
 	
 }
 
@@ -226,12 +274,19 @@ int main(void)
 	 
 	
 	/*	*/
-	memcpy(&activePiece, &S, sizeof(Piece));
-	LCD_DrawNewTetromino( &activePiece );
-	//createTetromino();
+	memcpy(&activePiece, &L, sizeof(Piece));
+	int aux_x = activePiece.start_x, aux_y = activePiece.start_y;
 	
+	activePiece.field_start_x = (FIELD_WIDTH_BLOCKS/2)-((activePiece.end_x - aux_x));
+	activePiece.field_start_y = FIELD_HEIGHT_BLOCKS-1;
+	activePiece.field_end_x = activePiece.field_start_x + (activePiece.end_x - aux_x);
+	activePiece.field_end_y = activePiece.field_start_y - (activePiece.end_y - aux_y);
+	
+	stopDownShift = 0;
+	LCD_DrawTetromino( &activePiece );
+	/*
 	int i = 0;
-	for( ; i < 4; i++){
+	for( ; i < FIELD_HEIGHT_BLOCKS - 1 - 2; i++ ){
 		LCD_DrawCube(0, i, Yellow);
 		LCD_DrawCube(1, i, Yellow);
 		LCD_DrawCube(2, i, Yellow);
@@ -243,96 +298,124 @@ int main(void)
 		LCD_DrawCube(8, i, Yellow);
 		//LCD_DrawCube(9, i, Yellow);
 	}
-	
+	*/
 	//LCD_ShiftRows( 0, 1 );
-	
-	// It is the last thing to do before start
-	init_timer(0, 0x4E2 ); 						/* 500us * 25MHz = 1.25*10^6 = 0x1312D0 */
-	enable_timer(0);	
 
+
+
+	//createTetromino();
 	 
 	while(1){
 		
-		if( tetrominoStopped ){
+		if( gameOver ){
 			
 			disable_timer(0);	// stop timer 0
 			
-			shiftRowsFull();
+			GUI_Text(MAX_X - (INFO_FIELD / 1.1), 140, (uint8_t *) "Gameover", Red, White);
 			
-			gameScore += 10;
-			sprintf(strScore, "%d", gameScore);
-			GUI_Text(MAX_X - (INFO_FIELD / 1.1), MAX_Y * 1 / 4, (uint8_t *) strScore, Red, White);
+			if( gameScore > highestScore){
+				highestScore = gameScore;
+			}
 			
-			createTetromino();
-			tetrominoStopped--;
+			if( restartGame ){
+				newGame();
+			}
 			
-			enable_timer(0);	// resume timer 0
-			
-		}
-		 
-		if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	// Joytick UP pressed 
+		}else if( gamePaused ){
 			
 			disable_timer(0);	// stop timer 0
 			
-			rotateTetromino( &activePiece );
+		}else{ // game not in pause
+			
+			enable_timer(0);
+			 
+			if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	// Joytick UP pressed 
+				
+				disable_timer(0);	// stop timer 0
+				
+				rotateTetromino( &activePiece );
 
-			enable_timer(0);	// resume timer 0
-			
-		} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 && activePiece.end_x < FIELD_WIDTH_BLOCKS){	// Joytick RIGHT pressed 
-			
-			disable_timer(0);	// stop timer 0
-			
-			LCD_RightShiftTetromino( &activePiece, 1 );
+				enable_timer(0);	// resume timer 0
+				
+			} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 && activePiece.end_x < FIELD_WIDTH_BLOCKS){	// Joytick RIGHT pressed 
+				
+				disable_timer(0);	// stop timer 0
+				
+				LCD_RightShiftTetromino( &activePiece );
 
-			enable_timer(0);	// resume timer 0
-			
-		} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0 && activePiece.start_x > 0){	// Joytick LEFT pressed
-			
-			disable_timer(0);	// stop timer 0
-			
-			LCD_LeftShiftTetromino( &activePiece, 1 );
+				enable_timer(0);	// resume timer 0
+				
+			} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0 && activePiece.start_x > 0){	// Joytick LEFT pressed
+				
+				disable_timer(0);	// stop timer 0
+				
+				LCD_LeftShiftTetromino( &activePiece );
 
-			enable_timer(0);	// resume timer 0
-			
-		} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0 && activePiece.end_y > 0){	// Joytick DOWN pressed 
-			
-			disable_timer(0);	// stop timer 0
-			
-			LCD_DownShiftTetromino( &activePiece, 1 );
+				enable_timer(0);	// resume timer 0
+				
+			} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0 && activePiece.end_y > 0){	// Joytick DOWN pressed 
+				
+				disable_timer(0);	// stop timer 0
+				
+				LCD_DownShiftTetromino( &activePiece );
 
-			enable_timer(0);	// resume timer 0
-		}
+				enable_timer(0);	// resume timer 0
+			}
+			
+			if( goDown ){
+				
+				disable_timer(0);	// stop timer 0
+				
+				LCD_DownShiftTetromino( &activePiece );
+				goDown--;
+
+				enable_timer(0);	// resume timer 0
+			}
+			
+			if( dropToBottom ){
+				
+				disable_timer(0);	// stop timer 0
+
+				while( possibleDownShift( &activePiece ) ){
+					LCD_DownShiftTetromino( &activePiece );
+				}
+				
+				tetrominoStopped++;
+				dropToBottom--;
+				
+				enable_timer(0);	// resume timer 0
+				
+			}
+			
+			if( tetrominoStopped ){
+				
+				//if(  ){ // possible game over
+					
+				//}else{ // not game over
+				
+					disable_timer(0);	// stop timer 0
+				
+					shiftRowsFull();
+					
+					gameScore += 10;
+					sprintf(strScore, "%d", gameScore);
+					GUI_Text(MAX_X - (INFO_FIELD / 1.1), 75, (uint8_t *) strScore, Red, White);
+					
+					sprintf(strLineCount, "%d", lineCount);
+					GUI_Text(MAX_X - (INFO_FIELD / 1.1), 115, (uint8_t *) strLineCount, Red, White);
+					
+					createTetromino();
+					tetrominoStopped--;
+					
+					enable_timer(0);	// resume timer 0
+				
+				//}
+				
+			}
 		
-		if( goDown ){
-			
-			disable_timer(0);	// stop timer 0
-			
-			LCD_DownShiftTetromino( &activePiece, 1 );
-			goDown--;
-
-			enable_timer(0);	// resume timer 0
 		}
-		
 	}
 	
-	/* Draw all and clear all
-	i = 0;
-	for(; i < 10; i++){
-		for(; j < 20; j++){
-			LCD_DrawCube(i, j, Red);
-			//LCD_DrawCube(i, j+1, Blue);
-		}
-		j = 0;
-	}
-	
-	i = 0;
-	for(; i < 10; i++){
-		for(; j < 20; j++){
-			LCD_ClearCube(i, j);
-		}
-		j = 0;
-	}
-	*/
 	
 	//init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
 	//init_timer(0, 0x6108 ); 						  /* 1ms * 25MHz = 25*10^3 = 0x6108 */

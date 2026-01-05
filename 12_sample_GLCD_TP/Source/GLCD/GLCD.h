@@ -67,7 +67,7 @@
 #define Blue2          0x051F
 #define Red            0xF800
 #define Magenta        0xF81F
-#define Orange         0xfc9803
+#define Orange         0xFC00
 #define Green          0x07E0
 #define Cyan           0x7FFF
 #define Yellow         0xFFE0
@@ -147,19 +147,20 @@ typedef struct {
 
 void LCD_DrawNewTetromino( ActivePiece* p );
 
-void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift );
-void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift );
-void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift );
+void LCD_LeftShiftTetromino( ActivePiece* p );
+void LCD_RightShiftTetromino( ActivePiece* p );
+void LCD_DownShiftTetromino( ActivePiece* p );
 void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow );
 void rotateTetromino( ActivePiece* p );
-int possibleLeftShift( ActivePiece* p, uint16_t shift );
-int possibleRightShift( ActivePiece* p, uint16_t shift );
-int possibleDownShift( ActivePiece* p, uint16_t shift );
+int possibleLeftShift( ActivePiece* p );
+int possibleRightShift( ActivePiece* p );
+int possibleDownShift( ActivePiece* p );
 void shiftRowsFull();
 int firstRowEmpty();
+void isGameOver( ActivePiece* p );
 
 /* rewatch and fix */
 
 void LCD_DrawCube( uint16_t x, uint16_t y, uint16_t bkColor );
-void LCD_ClearCube ( uint16_t x, uint16_t y );
+void LCD_CleanCube ( uint16_t x, uint16_t y );
 

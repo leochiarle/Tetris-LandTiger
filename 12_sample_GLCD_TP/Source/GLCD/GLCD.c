@@ -678,6 +678,8 @@ extern FieldBlock playField[FIELD_HEIGHT_BLOCKS][FIELD_WIDTH_BLOCKS];
 extern Piece activePiece;
 extern int stopDownShift;
 extern int gameScore;
+extern int lineCount;
+extern int gameOver;
 
 
 
@@ -685,11 +687,11 @@ extern int gameScore;
 					DOWN SHIFT
 **************************************/
 
-int possibleDownShift( ActivePiece* p, uint16_t shift ){
+int possibleDownShift( ActivePiece* p ){
 	
 	int possible = 0;
 	
-	if( p->end_y > 0 && shift < FIELD_HEIGHT_BLOCKS && shift >= 0 ) {
+	if( p->field_end_y > 0 ) {
 		
 		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 		possible = 1;
@@ -708,51 +710,24 @@ int possibleDownShift( ActivePiece* p, uint16_t shift ){
 	return possible;
 }
 
-void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift ){
-	
-		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
-		
-		if( possibleDownShift( p, shift ) ){
-			for( ; y1 <= y; y1++ ){
-				for( ; x1 >= x; x1-- ){
-					if( playField[y1][x1].full == 1 && y1-1 >= 0 && playField[y1-1][x1].full == 0 ){
-						
-						LCD_DrawCube(x1, y1-1, p->color);
-						LCD_ClearCube(x1, y1);	// If I don't clear the cube, previous if statement become false during the next iteration
-						playField[y1-1][x1].full = 1;
-					
-					}
-				}
-				
-				x1 = p->field_end_x;
-			
-			}
-			
-			p->field_start_y--;
-			p->field_end_y--;
-			
-		}	
-}
-/* FIX: con questo non funzionano le L e le T. Quando vengono create al primo downShift non funzionano bene
-void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift ){
+void LCD_DownShiftTetromino( ActivePiece* p ){
 	
 		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 		int start_x = p->start_x, start_y = p->start_y, end_x = p->end_x, end_y = p->end_y;
 		
-		if( possibleDownShift( p, shift ) ){
-			for( ; y1 <= y; y1++, start_y++ ){
-				for( ; x1 >= x; x1--, start_x++ ){
-					if( p->tetromino[start_y][start_x] == 1 && y1-1 >= 0 && playField[y1-1][x1].full == 0 ){
+		if( possibleDownShift( p ) ){
+			for( ; y1 <= y; y1++, end_y-- ){
+				for( ; x1 >= x; x1--, end_x-- ){
+					if( p->tetromino[end_y][end_x] == 1 && y1-1 >= 0 && playField[y1-1][x1].full == 0 ){
 						
 						LCD_DrawCube(x1, y1-1, p->color);
-						LCD_ClearCube(x1, y1);	// If I don't clear the cube, previous if statement become false during the next iteration
-						playField[y1-1][x1].full = 1;
+						LCD_CleanCube(x1, y1);
 					
 					}
 				}
 				
 				x1 = p->field_end_x;
-				start_x = p->start_x;
+				end_x = p->end_x;
 			
 			}
 			
@@ -761,17 +736,17 @@ void LCD_DownShiftTetromino( ActivePiece* p, uint16_t shift ){
 			
 		}	
 }
-*/
+
 
 /*************************************
 					LEFT SHIFT
 **************************************/
 
-int possibleLeftShift( ActivePiece* p, uint16_t shift ){
+int possibleLeftShift( ActivePiece* p ){
 	
 	int possible = 0;
 	
-	if( p->field_start_x > 0 && shift < FIELD_HEIGHT_BLOCKS && shift >= 0 ) {
+	if( p->field_start_x > 0 ) {
 		
 		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 		possible = 1;
@@ -788,9 +763,9 @@ int possibleLeftShift( ActivePiece* p, uint16_t shift ){
 }
 
 /* Shifta il pezzo "p" di "shift" volte a sinistra*/
-void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift ){
+void LCD_LeftShiftTetromino( ActivePiece* p ){
 		
-	if( possibleLeftShift( p, shift ) ){
+	if( possibleLeftShift( p ) ){
 		
 		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 		
@@ -799,7 +774,7 @@ void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift ){
 				if( playField[y][x].full == 1 && x-1 >= 0 && playField[y][x-1].full == 0 ){
 					
 					LCD_DrawCube(x-1, y, p->color);
-					LCD_ClearCube(x, y);
+					LCD_CleanCube(x, y);
 					playField[y][x-1].full = 1;
 				
 				}
@@ -818,11 +793,11 @@ void LCD_LeftShiftTetromino( ActivePiece* p, uint16_t shift ){
 					RIGHT SHIFT
 **************************************/
 
-int possibleRightShift( ActivePiece* p, uint16_t shift ){
+int possibleRightShift( ActivePiece* p ){
 	
 	int possible = 0;
 	
-	if( p->field_end_x < FIELD_WIDTH_BLOCKS-1 && shift < FIELD_WIDTH_BLOCKS && shift >= 0 ) {
+	if( p->field_end_x < FIELD_WIDTH_BLOCKS-1 ) {
 		
 		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 		possible = 1;
@@ -840,9 +815,9 @@ int possibleRightShift( ActivePiece* p, uint16_t shift ){
 	return possible;
 }
 
-void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift ){
+void LCD_RightShiftTetromino( ActivePiece* p ){
 	
-	if( possibleRightShift( p, shift )) {
+	if( possibleRightShift( p ) ) {
 		
 		int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 		
@@ -851,7 +826,7 @@ void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift ){
 				if( playField[y1][x1].full == 1 && x1+1 < FIELD_WIDTH_BLOCKS && playField[y1][x1+1].full == 0 ){
 					
 					LCD_DrawCube(x1+1, y1, p->color);
-					LCD_ClearCube(x1, y1);
+					LCD_CleanCube(x1, y1);
 					playField[y1][x1+1].full = 1;
 				
 				}
@@ -870,8 +845,8 @@ void LCD_RightShiftTetromino( ActivePiece* p, uint16_t shift ){
 /*************************************
 					DRAW TETROMINO
 **************************************/
-
-void LCD_DrawNewTetromino( ActivePiece* p ){ // IDEA: per disegnare la rotazione basta invertire le coordinate di lettura della matrice del tetromino (?)
+/*
+void LCD_DrawNewTetromino( ActivePiece* p ){
 	
 	int x = p->start_x, y = p->start_y;
 	
@@ -888,24 +863,16 @@ void LCD_DrawNewTetromino( ActivePiece* p ){ // IDEA: per disegnare la rotazione
 			x = p->start_x;
 		}
 		
-		int aux_x = p->start_x, aux_y = p->start_y;
-		
-		p->field_start_x = (FIELD_WIDTH_BLOCKS/2)-((p->end_x - aux_x));
-		p->field_start_y = FIELD_HEIGHT_BLOCKS-1;
-		p->field_end_x = p->field_start_x + (p->end_x - aux_x);
-		p->field_end_y = p->field_start_y - (p->end_y - aux_y);
-		
 	}	  
 }
-
-void LCD_DrawTetromino( ActivePiece* p ){ // IDEA: per disegnare la rotazione basta invertire le coordinate di lettura della matrice del tetromino (?)
+*/
+void LCD_DrawTetromino( ActivePiece* p ){
 	
 	int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 	int start_x = p->start_x, start_y = p->start_y, end_x = p->end_x, end_y = p->end_y;
 	
 	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
-		// CONTROLLA LA FUNZIONE COME DISEGNA DOPO LA ROTAZIONE
 		for( ; y >= y1; y--, start_y++ ){
 			for( ; x <= x1; x++, start_x++ ){
 				if( p->tetromino[start_y][start_x] == 1 ){
@@ -918,21 +885,21 @@ void LCD_DrawTetromino( ActivePiece* p ){ // IDEA: per disegnare la rotazione ba
 	}
 }
 
-void LCD_ClearTetromino( ActivePiece* p ){ // IDEA: per disegnare la rotazione basta invertire le coordinate di lettura della matrice del tetromino (?)
+void LCD_ClearTetromino( ActivePiece* p ){
 	
 	int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
 	int start_x = p->start_x, start_y = p->start_y, end_x = p->end_x, end_y = p->end_y;
 	
 	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
-		// CONTROLLA LA FUNZIONE COME DISEGNA DOPO LA ROTAZIONE
 		for( ; y >= y1; y-- ){
 			for( ; x <= x1; x++ ){
-				LCD_ClearCube( x, y );
+				LCD_CleanCube( x, y );
 			}
 			x = p->field_start_x;
 		}
 	}
+	
 }
 
 
@@ -1030,6 +997,10 @@ void rotateTetromino( ActivePiece* p ){
 }
 
 
+/*************************************
+				 SHIFT FULL ROWS
+**************************************/
+
 /* Shift rows down by 1 from "fromRow" to "toRow" included */
 void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow ){
 	
@@ -1045,7 +1016,7 @@ void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow ){
 						
 					}else{
 						
-						LCD_ClearCube( x, y );
+						LCD_CleanCube( x, y );
 						
 					}
 			}
@@ -1055,6 +1026,31 @@ void LCD_ShiftRows( uint16_t fromRow, uint16_t toRow ){
 		
 	}	
 }
+
+int firstRowEmpty(){
+	
+	int y = 0, x = 0, empty = 1;
+	
+	for( ; y <= FIELD_HEIGHT_BLOCKS; y++ ){
+		for( ; x < FIELD_WIDTH_BLOCKS && empty; x++ ){
+			if( playField[y][x].full == 1 ){
+				
+				empty = 0;
+			
+			}
+		}
+		
+		if( empty ){
+			return y;
+		}
+		
+		x = 0;
+		empty = 1;
+	}
+	
+	return -1;
+}
+
 
 void shiftRowsFull(){
 	
@@ -1084,34 +1080,35 @@ void shiftRowsFull(){
 	}else{
 		gameScore += 100 * numShiftedRows;
 	}
+	
+	lineCount += numShiftedRows;
 
 }
 
+/*************************************
+				 GAME OVER CHECKS
+**************************************/
 
-int firstRowEmpty(){
+void isGameOver( ActivePiece* p ){
 	
-	int y = 0, x = 0, empty = 1;
+	int x = p->field_start_x, y = p->field_start_y, x1 = p->field_end_x, y1 = p->field_end_y;
+	int start_x = p->start_x, start_y = p->start_y, end_x = p->end_x, end_y = p->end_y;
 	
-	for( ; y <= FIELD_HEIGHT_BLOCKS; y++ ){
-		for( ; x < FIELD_WIDTH_BLOCKS && empty; x++ ){
-			if( playField[y][x].full == 1 ){
+	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
+		
+		for( ; y >= y1 && !gameOver; y--, start_y++ ){
+			for( ; x <= x1 && !gameOver; x++, start_x++){
+				if( p->tetromino[start_y][start_x] == 1 && playField[y][x].full == 1 ){
+					gameOver = 1;
+				}
 				
-				empty = 0;
-			
 			}
+			x = p->field_start_x;
+			start_x = p->start_x;
 		}
-		
-		if( empty ){
-			return y;
-		}
-		
-		x = 0;
-		empty = 1;
 	}
-	
-	return -1;
-}
 
+}
 
 
 
@@ -1123,41 +1120,31 @@ void LCD_DrawCube ( uint16_t x, uint16_t y, uint16_t color ){
 	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
 		int block = BLOCK;
-		int pos_x = PADDING+(block*x);
-		int pos_y = MAX_Y-(block*y);
-		
+		int pos_x = PADDING+(block*x), pos_y = MAX_Y-(block*y);		
 	
 		do{
-			// FIX: sx e bottom non venivano mai eseguiti
-			//LCD_DrawLine( pos_x, pos_y, pos_x, pos_y-block, color ); // | sx
 			LCD_DrawLine( pos_x+block, pos_y, pos_x+block, pos_y-block, color ); // | dx
 			LCD_DrawLine( pos_x, pos_y-block, pos_x+block, pos_y-block, color ); // - top
-			//LCD_DrawLine( pos_x+block, pos_y, pos_x, pos_y, color ); // - bottom
 		
 			block--;
-		}while(block > 0);
+		}while( block > 0 );
 	
 		playField[y][x].full = 1;
 		playField[y][x].color = color;
 	}
 }
 
-void LCD_ClearCube ( uint16_t x, uint16_t y ){
+void LCD_CleanCube ( uint16_t x, uint16_t y ){
 	
 	if(x < FIELD_WIDTH_BLOCKS && x >= 0 && y < FIELD_HEIGHT_BLOCKS && y >= 0){
 		
 		int block = BLOCK;
-		int pos_x = PADDING+(block*x);
-		int pos_y = MAX_Y-(block*y);
-		
+		int pos_x = PADDING+(block*x), pos_y = MAX_Y-(block*y);		
 	
 		do{
-			// FIX: sx e bottom non venivano mai eseguiti
-			//LCD_DrawLine( pos_x, pos_y, pos_x, pos_y-block, color ); // | sx
 			LCD_DrawLine( pos_x+block, pos_y, pos_x+block, pos_y-block, Black ); // | dx
 			LCD_DrawLine( pos_x, pos_y-block, pos_x+block, pos_y-block, Black ); // - top
-			//LCD_DrawLine( pos_x+block, pos_y, pos_x, pos_y, color ); // - bottom
-		
+			
 			block--;
 		}while(block > 0);
 	

@@ -1,22 +1,8 @@
 -------------------------------------------------------------------------------------------------------------------------------------------------
 TODO:
 -------------------------------------------------------------------------------------------------------------------------------------------------
-Riguarda drawCube() per capire come disegna
-Riguarda cleanCube(), e i 3 shift
-
-Calcolati la profondità del pezzo all'inizio dello shift (es. Cubo -> inizia da 3, 19 ed è profondo 2, quindi fino a 3,17)
-
-ParsePieceShape() -> identifica l'area occupata dal pezzo (sarebbe da mettere come prima operaizone negli shift cosi' da sapere come muoverti)
-
-
-Punteggio
-
 
 Sistema le funzioni con commento: /* rewatch and fix */
-Sistema possibleRotate()
-
-Funzione piecePlaced() per quando il pezzo viene posizionato
-
 
 possibleRotation() 
 
@@ -27,11 +13,22 @@ l ed l rovesciata non funzionano:
 |
 |--
 
-la randomizzazione non funziona bene
+la randomizzazione non funziona bene (?)
 
-fare polling joystick ogni 50 ms
+fare polling joystick ogni 50 ms (?)
 
 Scrivere lo score in un'unica stringa utilizzando '\n' in sprintf()
+
+
+Spec. 6)
+Soft drop - If the user holds the joystick down, the fall speed of the tetromino increases
+to 2 squares/second while the user is holding the joystick down. When the user releases the
+joystick, the speed returns to 1 square/second.
+
+Spec. 10) Lose conditions - The game finishes when the placed tetromino goes over the top of the
+playing field.
+If the generated tetromino that appears at the top of the field overlaps with another block, the
+game ends as well.
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
 DONE TODAY:

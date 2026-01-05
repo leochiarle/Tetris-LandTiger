@@ -583,6 +583,26 @@
             </File>
           </Files>
         </Group>
+        <Group>
+          <GroupName>button_EXINT</GroupName>
+          <Files>
+            <File>
+              <FileName>button.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\button_EXINT\button.h</FilePath>
+            </File>
+            <File>
+              <FileName>IRQ_button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\button_EXINT\IRQ_button.c</FilePath>
+            </File>
+            <File>
+              <FileName>lib_button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\button_EXINT\lib_button.c</FilePath>
+            </File>
+          </Files>
+        </Group>
       </Groups>
     </Target>
     <Target>
@@ -894,7 +914,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>5</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>0</OneElfS>
@@ -1108,6 +1128,26 @@
               <FileName>RIT.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\RIT\RIT.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>button_EXINT</GroupName>
+          <Files>
+            <File>
+              <FileName>button.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\button_EXINT\button.h</FilePath>
+            </File>
+            <File>
+              <FileName>IRQ_button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\button_EXINT\IRQ_button.c</FilePath>
+            </File>
+            <File>
+              <FileName>lib_button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\button_EXINT\lib_button.c</FilePath>
             </File>
           </Files>
         </Group>

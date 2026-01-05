@@ -17,6 +17,15 @@ Once the tetromino is draw on the filed, those values become the values adapted 
 
 I use the polling technique to get the joystick value. But, maybe I can change it like the timer structure, with a variable that is modified while the interrupt occurs.
 
+In the infinite loop in the main I check if:
+- game is over
+- game is in pause
+- game is running
+    - joystick pressed
+    - shift down tetromino
+    - tetromino placed
+
+
 ---
 
 ### During the development
@@ -42,5 +51,8 @@ I use the polling technique to get the joystick value. But, maybe I can change i
   Got to Option for Target > C/C++ > Optimisation, and select -O0. At the end of the debugging you can put the previous value of the optimisation.
 
 - I tried to maintain a syntactic coherence while writing code. For example, I commented functions, I used spaces to make the code more readable, and things like this.
+
+- I had to flag the "Use MicroLIB" option in Target, because my file size exceeded the maximun size for keil free version
+
 
 
