@@ -9,7 +9,6 @@
 *********************************************************************************************************/
 #include "LPC17xx.h"
 #include "RIT.h"
-//#include "led.h"
 #include "GLCD.h" 
 
 /******************************************************************************
@@ -22,65 +21,61 @@
 **
 ******************************************************************************/
 
-volatile int down=0;
+extern int stopDownShift;
+extern ActivePiece activePiece;
+extern int goDown;
+extern int tetrominoStopped;
+extern int joystickMovement;
+extern int buttonKey1Debouncing;
+extern int buttonKey2Debouncing;
+extern int gameOver;
+extern int gamePaused;
+extern int restartGame;
+extern int dropToBottom;
 
 void RIT_IRQHandler (void)
-{					
-	static int up=0;
-	static int position=0;	
+{			
 	
-	if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	
-		/* Joytick UP pressed */
-		up++;
-		switch(up){
-			case 1:
-				//LED_Off(position);
-				//LED_On(0);
-				position = 0;
-				break;
-			case 60:	//3sec = 3000ms/50ms = 60
-				//LED_Off(position);
-				//LED_On(7);
-				position = 7;
-				break;
-			default:
-				break;
-		}
-	}
-	else{
-			up=0;
-	}
-	
-	/* button management */
-	if(down>=1){ 
-		if((LPC_GPIO2->FIOPIN & (1<<11)) == 0){	/* KEY1 pressed */
-			switch(down){				
-				case 2:				/* Since the first polling read can be unreliable, the confirmation of the pressure is given after one polling cycle */
-				if( position == 7){
-					//LED_On(0);
-					//LED_Off(7);
-					position = 0;
-				}
-				else{
-					//LED_Off(position);
-					//LED_On(++position);
-				}
-					break;
-				default:
-					break;
+	/* Key1 was pressed */
+	if(buttonKey1Debouncing == 2){
+		buttonKey1Debouncing = 1;
+		if( gameOver ){
+		
+			restartGame++;
+			
+		}else{
+			
+			if( gamePaused ){
+				gamePaused--;
+			}else{
+				gamePaused++;
 			}
-			down++;
-		}
-		else {	/* button released */
-			down=0;			
-			NVIC_EnableIRQ(EINT1_IRQn);							 /* enable Button interrupts			*/
-			LPC_PINCON->PINSEL4    |= (1 << 22);     /* External interrupt 0 pin selection */
 		}
 	}
-/*	else{
-			if(down==1)
-				down++;
-	} */
+	
+	/* Key2 was pressed */
+	if(buttonKey2Debouncing == 2){
+		dropToBottom++;
+		buttonKey2Debouncing = 1;
+	}
+	
+	/* Check for piece movement down */
+	if( activePiece.field_end_y > 0 && !stopDownShift){
+		
+		goDown++;
+		
+	}else{
+		
+		tetrominoStopped++;
+	
+	}
+	
+	/* Active joystick movement detection */
+	if( joystickMovement == 0 ){
+		
+		joystickMovement++;
+	
+	}
 	
   LPC_RIT->RICTRL |= 0x1;	/* clear interrupt flag */
 	

@@ -2,12 +2,8 @@
 #include "LPC17xx.h"
 #include "GLCD.h" 
 
-extern int gamePaused;
-extern int gameOver;
-extern ActivePiece activePiece;
-extern int tetrominoStopped;
-extern int restartGame;
-extern int dropToBottom;
+extern int buttonKey1Debouncing;
+extern int buttonKey2Debouncing;
 
 void EINT0_IRQHandler (void)	  	/* INT0														 */
 {		
@@ -18,28 +14,15 @@ void EINT0_IRQHandler (void)	  	/* INT0														 */
 
 void EINT1_IRQHandler (void)	  	/* KEY1														 */
 {
-	
-	if( gameOver ){
-		
-		restartGame++;
-		
-	}else{
-		
-		if( gamePaused ){
-			gamePaused--;
-		}else{
-			gamePaused++;
-		}
-		
-	}
-	
+	buttonKey1Debouncing = 2;
+
 	LPC_SC->EXTINT &= (1 << 1);     /* clear pending interrupt         */
 }
 
 void EINT2_IRQHandler (void)	  	/* KEY2														 */
 {
 	
-	dropToBottom++;
+	buttonKey2Debouncing = 2;
 	
   LPC_SC->EXTINT &= (1 << 2);     /* clear pending interrupt         */    
 }

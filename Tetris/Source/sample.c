@@ -49,9 +49,12 @@ int tetrominoStopped = 0;
 int gameScore = 0;
 int highestScore = 0;
 int lineCount = 0;
-int gamePaused = 1;
+int gamePaused = 0;
 int gameOver = 0;
 int restartGame = 0;
+int joystickMovement = 0;
+int buttonKey1Debouncing = 1;
+int buttonKey2Debouncing = 0;
 char strHighestScore[13];
 char strScore[13];
 char strLineCount[13];
@@ -147,7 +150,7 @@ void * memcpy(void *, const void *, size_t);
 void createTetromino(){
 	
 	//int rd_num = rand() % 7;
-	int rd_num = 4;
+	int rd_num = 3;
 	switch(rd_num){
 		case 0:
 			memcpy(&activePiece, &I, sizeof(Piece));
@@ -188,7 +191,7 @@ void createTetromino(){
 	
 	stopDownShift = 0;
 	
-	isGameOver( &activePiece ); // Has be checked before draw the nre tetromino
+	isGameOver( &activePiece ); // Has to be checked before draw the nre tetromino
 	LCD_DrawTetromino( &activePiece );
 }
 
@@ -226,7 +229,9 @@ void initEverithing(){
 	
 	initStringsScore();
 	
-	init_timer(0, 0x4E2 ); 						/* 500us * 25MHz = 1.25*10^6 = 0x1312D0 */
+	init_RIT(0x004C4B40 * 2);									/* RIT Initialization 50 msec       	*/
+	//init_RIT(0x004C4B40 / 10);	
+	enable_RIT();
 	
 }
 
@@ -252,11 +257,13 @@ void newGame(){
 	gameScore = 0;
 	lineCount = 0;
 	gamePaused = 1;
+	buttonKey1Debouncing = 1;
 	gameOver = 0;
 	restartGame = 0;
 	
 	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 140, (uint8_t *) "Gameover", Black, Black); // clean text "gameover"
 	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 75, (uint8_t *) "00000000000", Black, Black); // clean text score point
+	GUI_Text(MAX_X - (INFO_FIELD / 1.1), 115, (uint8_t *) "00000000000", Black, Black); // clean text score point
 	
 	initStringsScore();
 	cleanPlayFied();
@@ -272,44 +279,13 @@ int main(void)
 	LCD_DrawLine(MAX_X - INFO_FIELD + 1, MAX_Y - PLAY_FIELD_HEIGHT, MAX_X - INFO_FIELD + 1, MAX_Y, White);
 	LCD_DrawLine(0, MAX_Y - PLAY_FIELD_HEIGHT - 1, PLAY_FIELD_WIDTH, MAX_Y - PLAY_FIELD_HEIGHT - 1, White);
 	 
-	
-	/*	*/
-	memcpy(&activePiece, &L, sizeof(Piece));
-	int aux_x = activePiece.start_x, aux_y = activePiece.start_y;
-	
-	activePiece.field_start_x = (FIELD_WIDTH_BLOCKS/2)-((activePiece.end_x - aux_x));
-	activePiece.field_start_y = FIELD_HEIGHT_BLOCKS-1;
-	activePiece.field_end_x = activePiece.field_start_x + (activePiece.end_x - aux_x);
-	activePiece.field_end_y = activePiece.field_start_y - (activePiece.end_y - aux_y);
-	
-	stopDownShift = 0;
-	LCD_DrawTetromino( &activePiece );
-	/*
-	int i = 0;
-	for( ; i < FIELD_HEIGHT_BLOCKS - 1 - 2; i++ ){
-		LCD_DrawCube(0, i, Yellow);
-		LCD_DrawCube(1, i, Yellow);
-		LCD_DrawCube(2, i, Yellow);
-		LCD_DrawCube(3, i, Yellow);
-		LCD_DrawCube(4, i, Yellow);
-		LCD_DrawCube(5, i, Yellow);
-		LCD_DrawCube(6, i, Yellow);
-		LCD_DrawCube(7, i, Yellow);
-		LCD_DrawCube(8, i, Yellow);
-		//LCD_DrawCube(9, i, Yellow);
-	}
-	*/
-	//LCD_ShiftRows( 0, 1 );
-
-
-
-	//createTetromino();
+	createTetromino();
 	 
 	while(1){
 		
 		if( gameOver ){
 			
-			disable_timer(0);	// stop timer 0
+			//disable_timer(0);	// stop timer 0
 			
 			GUI_Text(MAX_X - (INFO_FIELD / 1.1), 140, (uint8_t *) "Gameover", Red, White);
 			
@@ -321,60 +297,72 @@ int main(void)
 				newGame();
 			}
 			
-		}else if( gamePaused ){
+		}else if( gamePaused && buttonKey1Debouncing == 1 ){
 			
-			disable_timer(0);	// stop timer 0
+			//disable_timer(0);	// stop timer 0
+			
+			GUI_Text(MAX_X - (INFO_FIELD / 1.1), 140, (uint8_t *) "Paused", Red, White); // clean text "Paused"
 			
 		}else{ // game not in pause
 			
-			enable_timer(0);
+			GUI_Text(MAX_X - (INFO_FIELD / 1.1), 140, (uint8_t *) "Paused", Black, Black);
+			
+			//enable_timer(0);
 			 
-			if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	// Joytick UP pressed 
+			if( joystickMovement ){
 				
-				disable_timer(0);	// stop timer 0
-				
-				rotateTetromino( &activePiece );
+				if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	// Joytick UP pressed 
+					
+					//disable_timer(0);	// stop timer 0
+					
+					rotateTetromino( &activePiece );
+					joystickMovement--;
 
-				enable_timer(0);	// resume timer 0
-				
-			} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 && activePiece.end_x < FIELD_WIDTH_BLOCKS){	// Joytick RIGHT pressed 
-				
-				disable_timer(0);	// stop timer 0
-				
-				LCD_RightShiftTetromino( &activePiece );
+					//enable_timer(0);	// resume timer 0
+					
+				} else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0 ){	// Joytick RIGHT pressed 
+					
+					//disable_timer(0);	// stop timer 0
+					
+					LCD_RightShiftTetromino( &activePiece );
+					joystickMovement--;
 
-				enable_timer(0);	// resume timer 0
-				
-			} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0 && activePiece.start_x > 0){	// Joytick LEFT pressed
-				
-				disable_timer(0);	// stop timer 0
-				
-				LCD_LeftShiftTetromino( &activePiece );
+					//enable_timer(0);	// resume timer 0
+					
+				} else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0 ){	// Joytick LEFT pressed
+					
+					//disable_timer(0);	// stop timer 0
+					
+					LCD_LeftShiftTetromino( &activePiece );
+					joystickMovement--;
 
-				enable_timer(0);	// resume timer 0
-				
-			} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0 && activePiece.end_y > 0){	// Joytick DOWN pressed 
-				
-				disable_timer(0);	// stop timer 0
-				
-				LCD_DownShiftTetromino( &activePiece );
+					//enable_timer(0);	// resume timer 0
+					
+				} else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0 ){	// Joytick DOWN pressed 
+					
+					//disable_timer(0);	// stop timer 0
+					
+					LCD_DownShiftTetromino( &activePiece );
+					joystickMovement--;
 
-				enable_timer(0);	// resume timer 0
+					//enable_timer(0);	// resume timer 0
+				}
+				
 			}
 			
-			if( goDown ){
+			if( goDown >= 20 ){
 				
-				disable_timer(0);	// stop timer 0
+				//disable_timer(0);	// stop timer 0
 				
 				LCD_DownShiftTetromino( &activePiece );
-				goDown--;
+				goDown = 0;
 
-				enable_timer(0);	// resume timer 0
+				//enable_timer(0);	// resume timer 0
 			}
 			
-			if( dropToBottom ){
+			if( dropToBottom && buttonKey2Debouncing == 1 ){
 				
-				disable_timer(0);	// stop timer 0
+				//disable_timer(0);	// stop timer 0
 
 				while( possibleDownShift( &activePiece ) ){
 					LCD_DownShiftTetromino( &activePiece );
@@ -383,46 +371,32 @@ int main(void)
 				tetrominoStopped++;
 				dropToBottom--;
 				
-				enable_timer(0);	// resume timer 0
+				//enable_timer(0);	// resume timer 0
 				
 			}
 			
 			if( tetrominoStopped ){
 				
-				//if(  ){ // possible game over
-					
-				//}else{ // not game over
+				//disable_timer(0);	// stop timer 0
+			
+				shiftRowsFull();
 				
-					disable_timer(0);	// stop timer 0
+				gameScore += 10;
+				sprintf(strScore, "%d", gameScore);
+				GUI_Text(MAX_X - (INFO_FIELD / 1.1), 75, (uint8_t *) strScore, Red, White);
 				
-					shiftRowsFull();
-					
-					gameScore += 10;
-					sprintf(strScore, "%d", gameScore);
-					GUI_Text(MAX_X - (INFO_FIELD / 1.1), 75, (uint8_t *) strScore, Red, White);
-					
-					sprintf(strLineCount, "%d", lineCount);
-					GUI_Text(MAX_X - (INFO_FIELD / 1.1), 115, (uint8_t *) strLineCount, Red, White);
-					
-					createTetromino();
-					tetrominoStopped--;
-					
-					enable_timer(0);	// resume timer 0
+				sprintf(strLineCount, "%d", lineCount);
+				GUI_Text(MAX_X - (INFO_FIELD / 1.1), 115, (uint8_t *) strLineCount, Red, White);
 				
-				//}
+				createTetromino();
+				tetrominoStopped = 0;
+				
+				//enable_timer(0);	// resume timer 0
 				
 			}
 		
 		}
 	}
-	
-	
-	//init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
-	//init_timer(0, 0x6108 ); 						  /* 1ms * 25MHz = 25*10^3 = 0x6108 */
-	//init_timer(0, 0x4E2 ); 						    /* 500us * 25MHz = 1.25*10^3 = 0x4E2 */
-	//init_timer(0, 0xC8 ); 						    /* 8us * 25MHz = 200 ~= 0xC8 */
-	
-	//enable_timer(0);
 	
 	LPC_SC->PCON |= 0x1;									/* power-down	mode										*/
 	LPC_SC->PCON &= ~(0x2);						

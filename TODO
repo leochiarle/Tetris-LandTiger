@@ -6,19 +6,10 @@ Sistema le funzioni con commento: /* rewatch and fix */
 
 possibleRotation() 
 
-l ed l rovesciata non funzionano:
---|
-  |
-| |
-|
-|--
+Sposta le funzioni nel main, lascia nel file GLCD.s solo le funzioni LCD
 
-la randomizzazione non funziona bene (?)
-
-fare polling joystick ogni 50 ms (?)
-
-Scrivere lo score in un'unica stringa utilizzando '\n' in sprintf()
-
+riguarda bene i possibleShift()
+prova a mettere nei possible shift le condizioni che hai nei LCD_shift
 
 Spec. 6)
 Soft drop - If the user holds the joystick down, the fall speed of the tetromino increases
@@ -29,6 +20,19 @@ Spec. 10) Lose conditions - The game finishes when the placed tetromino goes ove
 playing field.
 If the generated tetromino that appears at the top of the field overlaps with another block, the
 game ends as well.
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+DONE YESTERDAY:
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+no polling joystick movement
+	soft drop: downMove viene eseguito ogni volta che viene premuto il joystick down con un RIT di 50 ms
+no timer ma usi RIT
+button key1 debouncing
+button key2 debouncing
+
+fix problem l
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
 DONE TODAY:

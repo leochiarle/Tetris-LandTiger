@@ -26,27 +26,10 @@
 **
 ******************************************************************************/
 
-/* Global variable and function */
-extern ActivePiece activePiece;
-extern int goDown;
-extern int stopDownShift;
-extern int tetrominoStopped;
-
 
 void TIMER0_IRQHandler (void)
 {
-	
-	// i valori vanno aggiornati nel timer perche' il timer e' indipendente e non aspetta la fine delle funzioni chiamate
-	if( activePiece.field_end_y > 0 && !stopDownShift){
-		
-		goDown++;
-		
-	}else{
-		
-		tetrominoStopped++;
-	
-	}
-	
+
   LPC_TIM0->IR = 1;			/* clear interrupt flag */
 	
   return;
