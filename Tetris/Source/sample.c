@@ -59,6 +59,7 @@ char strHighestScore[13];
 char strScore[13];
 char strLineCount[13];
 
+
 void * memcpy(void *, const void *, size_t);
 
 	
@@ -231,7 +232,6 @@ void initEverithing(){
 	initStringsScore();
 	
 	init_RIT(0x004C4B40 * 2);									/* RIT Initialization 50 msec * n  */
-	//init_RIT(0x004C4B40 / 10);	
 	enable_RIT();
 	
 }

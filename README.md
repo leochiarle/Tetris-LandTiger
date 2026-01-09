@@ -37,9 +37,7 @@ In the infinite loop in the main I check if:
 
 
 - I can't use RIT (Repetitive Interrupt Timer) to polling the joystick move and execute function to modify the LCD because in the ISR (Interrupt Service Routine) you can't use: printf, sprintf, LCD function or UART blocking; because they can cause internal interrupt, deadlock or HardFault.
-
-
-- I can't execute long function in the interrupt handler of the timer, so I update a variable and then use it in the main infinite loop.
+Correction: actually only with the emulator this doesn't work, with the real board there shouldn't be problems.
 
 
 - GLCD.h contains only struct and functions declarations. Instead, GLCD.c contains global variables and functions definitions.
