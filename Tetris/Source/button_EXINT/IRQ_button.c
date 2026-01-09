@@ -14,7 +14,7 @@ void EINT0_IRQHandler (void)	  	/* INT0														 */
 
 void EINT1_IRQHandler (void)	  	/* KEY1														 */
 {
-	buttonKey1Debouncing = 2;
+	buttonKey1Debouncing = 7;
 
 	LPC_SC->EXTINT &= (1 << 1);     /* clear pending interrupt         */
 }
@@ -22,7 +22,7 @@ void EINT1_IRQHandler (void)	  	/* KEY1														 */
 void EINT2_IRQHandler (void)	  	/* KEY2														 */
 {
 	
-	buttonKey2Debouncing = 2;
+	buttonKey2Debouncing = 7;
 	
   LPC_SC->EXTINT &= (1 << 2);     /* clear pending interrupt         */    
 }

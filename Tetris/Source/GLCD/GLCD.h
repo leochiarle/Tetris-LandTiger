@@ -145,7 +145,6 @@ typedef struct {
 
 } ActivePiece;
 
-void LCD_DrawNewTetromino( ActivePiece* p );
 
 void LCD_LeftShiftTetromino( ActivePiece* p );
 void LCD_RightShiftTetromino( ActivePiece* p );
@@ -158,8 +157,6 @@ int possibleDownShift( ActivePiece* p );
 void shiftRowsFull();
 int firstRowEmpty();
 void isGameOver( ActivePiece* p );
-
-/* rewatch and fix */
 
 void LCD_DrawCube( uint16_t x, uint16_t y, uint16_t bkColor );
 void LCD_CleanCube ( uint16_t x, uint16_t y );

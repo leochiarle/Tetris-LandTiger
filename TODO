@@ -2,15 +2,6 @@
 TODO:
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
-Sistema le funzioni con commento: /* rewatch and fix */
-
-possibleRotation() 
-
-Sposta le funzioni nel main, lascia nel file GLCD.s solo le funzioni LCD
-
-riguarda bene i possibleShift()
-prova a mettere nei possible shift le condizioni che hai nei LCD_shift
-
 Spec. 6)
 Soft drop - If the user holds the joystick down, the fall speed of the tetromino increases
 to 2 squares/second while the user is holding the joystick down. When the user releases the
@@ -18,9 +9,6 @@ joystick, the speed returns to 1 square/second.
 
 Spec. 10) Lose conditions - The game finishes when the placed tetromino goes over the top of the
 playing field.
-If the generated tetromino that appears at the top of the field overlaps with another block, the
-game ends as well.
-
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
 DONE YESTERDAY:
@@ -38,7 +26,9 @@ fix problem l
 DONE TODAY:
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+fixed all shift, possibleShift, rotation, and possibleRotation
+fixed debouncing ( decrement the variable every 50 ms )
+slowed down joystick timer
 
 
 

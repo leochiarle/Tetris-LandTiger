@@ -37,7 +37,11 @@ void RIT_IRQHandler (void)
 {			
 	
 	/* Key1 was pressed */
-	if(buttonKey1Debouncing == 2){
+	if( buttonKey1Debouncing >= 3 ){
+		buttonKey1Debouncing--;
+	}
+	
+	if( buttonKey1Debouncing == 2 ){
 		buttonKey1Debouncing = 1;
 		if( gameOver ){
 		
@@ -54,9 +58,20 @@ void RIT_IRQHandler (void)
 	}
 	
 	/* Key2 was pressed */
-	if(buttonKey2Debouncing == 2){
+	if( buttonKey2Debouncing >= 3 ){
+		buttonKey2Debouncing--;
+	}
+		
+	if( buttonKey2Debouncing == 2 ){
 		dropToBottom++;
 		buttonKey2Debouncing = 1;
+	}
+	
+	/* Active joystick movement detection */
+	if( joystickMovement < 3 ){
+		
+		joystickMovement++;
+	
 	}
 	
 	/* Check for piece movement down */
@@ -67,13 +82,6 @@ void RIT_IRQHandler (void)
 	}else{
 		
 		tetrominoStopped++;
-	
-	}
-	
-	/* Active joystick movement detection */
-	if( joystickMovement == 0 ){
-		
-		joystickMovement++;
 	
 	}
 	
